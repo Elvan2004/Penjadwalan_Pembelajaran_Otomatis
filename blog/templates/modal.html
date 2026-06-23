@@ -1,0 +1,108 @@
+<!-- Add Modal -->
+<div id="add-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Tambah {{ title }}
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="add-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <form method="POST" action="/data/add/{{ path }}/">
+                {% csrf_token %}
+                <div class="grid gap-4 grid-cols-2 py-4 md:py-6">
+                    {% for name, val in table_columns.items %}
+                        <div class="col-span-2">
+                            {% if val.type == 'time' %}
+                                <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                                    </div>
+                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                                </div>
+                            {% elif val.type == 'checkbox' %}
+                                <div class="flex items-center">
+                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="w-4 h-4 border rounded-sm bg-gray-100/50 focus:ring-2 focus:ring-blue-300 checked:text-blue-600">
+                                    <label for="{{ name }}" class="select-none ms-2 text-sm font-medium text-heading">{{ val.label }}</label>
+                                </div>
+                            {% else %}
+                                <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
+                                <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="flex items-center space-x-4 border-t border-default border-gray-300 pt-4 md:pt-6">
+                    <button type="submit" class="inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 box-border border border-transparent focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">
+                        <svg class="w-4 h-4 me-1.5 -ms-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/></svg>
+                        Buat
+                    </button>
+                    <button data-modal-hide="add-modal" type="button" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 hover:text-heading focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div id="update-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Ubah {{ title }}
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="update-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <form method="POST" action="/data/update/{{ path }}/">
+                {% csrf_token %}
+                <input type="hidden" name="id" id="rec-id"/>
+                <div class="grid gap-4 grid-cols-2 py-4 md:py-6">
+                    {% for name, val in table_columns.items %}
+                        <div class="col-span-2">
+                            {% if val.type == 'time' %}
+                                <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                                    </div>
+                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                                </div>
+                            {% elif val.type == 'checkbox' %}
+                                <div class="flex items-center">
+                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="w-4 h-4 border rounded-sm bg-gray-100/50 focus:ring-2 focus:ring-blue-300 checked:text-blue-600">
+                                    <label for="{{ name }}" class="select-none ms-2 text-sm font-medium text-heading">{{ val.label }}</label>
+                                </div>
+                            {% else %}
+                                <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
+                                <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="flex items-center space-x-4 border-t border-default border-gray-300 pt-4 md:pt-6">
+                    <button type="submit" class="inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 box-border border border-transparent focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">
+                        <svg class="w-4 h-4 me-1.5 -ms-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"/></svg>
+                        Simpan
+                    </button>
+                    <button data-modal-hide="update-modal" type="button" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 hover:text-heading focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% include "remove_modal.html" %}

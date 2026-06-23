@@ -1,0 +1,1029 @@
+{% extends "base.html" %}
+
+{% block additional_head %}
+<link href="https://cdn.datatables.net/2.3.8/css/dataTables.tailwindcss.css" rel="stylesheet" />
+{% endblock %}
+
+{% block title %}
+Buat Jadwal
+{% endblock %}
+
+{% block content %}
+{% include "sidebar.html" %}
+
+<div class="ml-64 p-4">
+    <div class="flex justify-between items-end">
+        <h1 class="font-bold text-3xl text-blue-900">Buat Jadwal</h1>
+        <span class="inline-flex items-center px-2 py-1 ring-1 ring-inset ring-red-300 text-red-700 text-md font-medium rounded-lg bg-red-100">Draf</span>
+    </div>
+    <hr class="my-3 border-blue-900"/>
+    <div class="flex justify-between items-start">
+        <div class="flex space-x-2">
+            <button data-modal-target="data-modal" data-modal-toggle="data-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Tambah Data</button>
+            <button data-modal-target="constraint-modal" data-modal-toggle="constraint-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Tambah Batasan</button>
+        </div>
+        <a href="/jadwal/view/21" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Buat Jadwal</a>
+    </div>
+    <br/>
+    <div class="grid grid-cols-5">
+        <label for="name" class="block text-md font-medium text-blue-900 my-auto">Nama Jadwal</label>
+        <div class="col-span-4">
+            <input id="name" type="text" name="name" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
+        </div>
+    </div>
+    <br/><br/>
+    <h2 class="font-semibold text-2xl text-blue-900 mb-3">Data</h2>
+    <div class="grid grid-cols-3 gap-x-4 gap-y-3">
+        <button data-modal-target="hari-modal" data-modal-toggle="hari-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Hari</button>
+        <button data-modal-target="jam-modal" data-modal-toggle="jam-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Jam</button>
+        <button data-modal-target="kelas-modal" data-modal-toggle="kelas-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Kelas</button>
+        <button data-modal-target="ruang-modal" data-modal-toggle="ruang-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Ruang</button>
+        <button data-modal-target="pengajar-modal" data-modal-toggle="pengajar-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Pengajar</button>
+        <button data-modal-target="pelajaran-modal" data-modal-toggle="pelajaran-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Data Pelajaran</button>
+    </div>
+    <br/><br/>
+    <h2 class="font-semibold text-2xl text-blue-900 mb-4">Batasan</h2>
+    <div id="div-data-table">
+        <table id="data-table" class="display">
+            <thead>
+                <tr>
+                    <th>Data 1</th>
+                    <th>Data 2</th>
+                    <th>Bersedia</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div id="div-data-table2" class="hidden">
+        <table id="data-table2" class="display">
+            <thead>
+                <tr>
+                    <th>Data 1</th>
+                    <th>Data 2</th>
+                    <th>Bersedia</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-red-600">
+                    <td>Hari - Selasa</td>
+                    <td>Pelajaran - Upacara</td>
+                    <td></td>
+                </tr>
+                <tr class="text-red-600">
+                    <td>Hari - Rabu</td>
+                    <td>Pelajaran - Upacara</td>
+                    <td></td>
+                </tr>
+                <tr class="text-red-600">
+                    <td>Hari - Selasa</td>
+                    <td>Pelajaran - Agama</td>
+                    <td></td>
+                </tr>
+                <tr class="text-red-600">
+                    <td>Hari - Rabu</td>
+                    <td>Pelajaran - Agama</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="data-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Tambah Data
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="data-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="flex gap-x-2 mt-4">
+                <select id="select-data" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData(this)">
+                    <option value="" selected>Pilih Data</option>
+                    <option value="hari">Hari</option>
+                    <option value="jam">Jam</option>
+                    <option value="kelas">Kelas</option>
+                    <option value="ruang">Ruang</option>
+                    <option value="pengajar">Pengajar</option>
+                    <option value="pelajaran">Pelajaran</option>
+                </select>
+                <button class="hidden text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" id="tambah-selected-data" onclick="clickSelectedData()">Tambah</button>
+            </div>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-hari">
+                <table id="tambah-data-hari-table" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nama</th>
+                            <th>Urutan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_hari %}
+                            <tr>
+                                <td></td>
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.sequence }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-jam">
+                <table id="tambah-data-jam-table" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Mulai</th>
+                            <th>Selesai</th>
+                            <th>Urutan</th>
+                            <th>Istirahat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_jam %}
+                            <tr>
+                                <td></td>
+                                <td>{{ data.start_time }}</td>
+                                <td>{{ data.finish_time }}</td>
+                                <td>{{ data.sequence }}</td>
+                                <td>
+                                    {% if data.is_break %}
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                        </svg>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-kelas">
+                <table id="tambah-data-kelas-table" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nama</th>
+                            <th>Urutan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_kelas %}
+                            <tr>
+                                <td></td>
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.sequence }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-ruang">
+                <table id="tambah-data-ruang-table" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nama</th>
+                            <th>Kapasitas Kelas</th>
+                            <th>Berbagi Kelas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_ruang %}
+                            <tr>
+                                <td></td>
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.class_capacity }}</td>
+                                <td>
+                                    {% if data.is_same_time_shareable %}
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                        </svg>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-pengajar">
+                <table id="tambah-data-pengajar-table" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_pengajar %}
+                            <tr>
+                                <td></td>
+                                <td>{{ data.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-pelajaran">
+                <table id="tambah-data-pelajaran-table" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nama</th>
+                            <th>Slot Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_pelajaran %}
+                            <tr>
+                                <td></td>
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.time_slot }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="constraint-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Tambah Batasan
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="constraint-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <br/>
+            <label for="select-data-1" class="block mb-2.5 text-lg font-medium text-heading">Data 1</label>
+            <select id="select-data-1" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData1()">
+                <option value="" selected>Pilih Data</option>
+                <option value="hari">Hari</option>
+                <option value="jam">Jam</option>
+                <option value="kelas">Kelas</option>
+                <option value="ruang">Ruang</option>
+                <option value="pengajar">Pengajar</option>
+                <option value="pelajaran">Pelajaran</option>
+            </select>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-hari2">
+                <table id="tambah-data-hari-table2" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nama</th>
+                            <th>Urutan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td>Senin</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>Selasa</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>Rabu</td>
+                            <td>3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <br/>
+            <label for="select-data-2" class="block mb-2.5 text-lg font-medium text-heading">Data 2</label>
+            <select id="select-data-2" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData2()">
+                <option value="" selected>Pilih Data</option>
+                <option value="hari">Hari</option>
+                <option value="jam">Jam</option>
+                <option value="kelas">Kelas</option>
+                <option value="ruang">Ruang</option>
+                <option value="pengajar">Pengajar</option>
+                <option value="pelajaran">Pelajaran</option>
+            </select>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-pelajaran2">
+                <table id="tambah-data-pelajaran-table2" class="display">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nama</th>
+                            <th>Slot Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_pelajaran %}
+                            <tr>
+                                <td></td>
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.time_slot }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <br/>
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <input id="capable" type="checkbox" value="" class="w-5 h-5 border border-default-medium rounded-sm bg-neutral-secondary-medium checked:text-blue-600">
+                    <label for="capable" class="ms-2 text-md font-medium text-heading text-blue-900 select-none">Bersedia</label>
+                </div>
+                <button class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" id="tambah-selected-batasan" onclick="clickSelectedBatasan()">Tambah</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="hari-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Hari
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="hari-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="pt-4 md:pt-5">
+                <table id="data-hari-table" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Urutan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Senin</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>Selasa</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>Rabu</td>
+                            <td>3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="jam-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Jam
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="jam-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="pt-4 md:pt-5">
+                <table id="data-jam-table" class="display">
+                    <thead>
+                        <tr>
+                            <th>Mulai</th>
+                            <th>Selesai</th>
+                            <th>Urutan</th>
+                            <th>Istirahat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>8 a.m.</td>
+                            <td>8:30 a.m.</td>
+                            <td>1</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>8:30 a.m.</td>
+                            <td>9 a.m.</td>
+                            <td>2</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>9 a.m.</td>
+                            <td>9:30 a.m.</td>
+                            <td>3</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>9:30 a.m.</td>
+                            <td>10 a.m.</td>
+                            <td>4</td>
+                            <td>
+                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                </svg>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>10 a.m.</td>
+                            <td>10:30 a.m.</td>
+                            <td>5</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>10:30 a.m.</td>
+                            <td>11 a.m.</td>
+                            <td>6</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>11 a.m.</td>
+                            <td>11:30 a.m.</td>
+                            <td>7</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="kelas-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Kelas
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="kelas-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="pt-4 md:pt-5">
+                <table id="data-kelas-table" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Urutan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1A</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>1B</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>2A</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>2B</td>
+                            <td>4</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="ruang-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Ruang
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="ruang-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="pt-4 md:pt-5">
+                <table id="data-ruang-table" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Kapasitas Kelas</th>
+                            <th>Berbagi Kelas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>101</td>
+                            <td>30</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>102</td>
+                            <td>30</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>103</td>
+                            <td>30</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>104</td>
+                            <td>30</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pengajar-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Pengajar
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="pengajar-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="pt-4 md:pt-5">
+                <table id="data-pengajar-table" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Anto</td>
+                        </tr>
+                        <tr>
+                            <td>Budi</td>
+                        </tr>
+                        <tr>
+                            <td>Herdi</td>
+                        </tr>
+                        <tr>
+                            <td>Lusi</td>
+                        </tr>
+                        <tr>
+                            <td>Rusdi</td>
+                        </tr>
+                        <tr>
+                            <td>Susanto</td>
+                        </tr>
+                        <tr>
+                            <td>Susi</td>
+                        </tr>
+                        <tr>
+                            <td>Wati</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pelajaran-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Pelajaran
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="pelajaran-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="pt-4 md:pt-5">
+                <table id="data-pelajaran-table" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Slot Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Agama</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>B. Indo</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>B. Ing</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>MTK</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>PJOK</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>SBK</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>TIK</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>Upacara</td>
+                            <td>1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.tailwindcss.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js"></script>
+<script>
+    let tableBatasan;
+    let tableBatasan2;
+
+    let tableHari;
+    let tableHari2;
+    let tableJam;
+    let tableKelas;
+    let tableRuang;
+    let tablePengajar;
+    let tablePelajaran;
+    let tablePelajaran2;
+
+    function updateButtons(table) {
+        const count = table.rows({ selected: true }).count();
+
+        let button = document.getElementById("tambah-selected-data");
+
+        if (count > 0) {
+            button.classList.remove("hidden");
+        } else {
+            button.classList.add("hidden");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        tableBatasan = new DataTable("#data-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            order: [[0, 'desc']],
+        });
+
+        tableBatasan2 = new DataTable("#data-table2", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            order: [[0, 'desc']],
+        });
+
+        tableHari = new DataTable("#tambah-data-hari-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[2, 'asc']],
+        });
+
+        tableHari2 = new DataTable("#tambah-data-hari-table2", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[2, 'asc']],
+        });
+
+        tableJam = new DataTable("#tambah-data-jam-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[3, 'asc']],
+        });
+
+        tableKelas = new DataTable("#tambah-data-kelas-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[2, 'asc']],
+        });
+
+        tableRuang = new DataTable("#tambah-data-ruang-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[1, 'asc']],
+        });
+
+        tablePengajar = new DataTable("#tambah-data-pengajar-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[1, 'asc']],
+        });
+
+        tablePelajaran = new DataTable("#tambah-data-pelajaran-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[1, 'asc']],
+        });
+
+        tablePelajaran2 = new DataTable("#tambah-data-pelajaran-table2", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[1, 'asc']],
+        });
+
+        tableHari.on('select', () => updateButtons(tableHari));
+        tableHari.on('deselect', () => updateButtons(tableHari));
+        tableJam.on('select', () => updateButtons(tableJam));
+        tableJam.on('deselect', () => updateButtons(tableJam));
+        tableKelas.on('select', () => updateButtons(tableKelas));
+        tableKelas.on('deselect', () => updateButtons(tableKelas));
+        tableRuang.on('select', () => updateButtons(tableRuang));
+        tableRuang.on('deselect', () => updateButtons(tableRuang));
+        tablePengajar.on('select', () => updateButtons(tablePengajar));
+        tablePengajar.on('deselect', () => updateButtons(tablePengajar));
+        tablePelajaran.on('select', () => updateButtons(tablePelajaran));
+        tablePelajaran.on('deselect', () => updateButtons(tablePelajaran));
+
+        new DataTable("#data-hari-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            paging: false,
+            filter: false,
+            order: [[1, 'asc']],
+        });
+
+        new DataTable("#data-jam-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            paging: false,
+            filter: false,
+            order: [[2, 'asc']],
+        });
+
+        new DataTable("#data-kelas-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            paging: false,
+            filter: false,
+            order: [[1, 'asc']],
+        });
+
+        new DataTable("#data-ruang-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            paging: false,
+            filter: false,
+            order: [[0, 'asc']],
+        });
+
+        new DataTable("#data-pengajar-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            paging: false,
+            filter: false,
+            order: [[0, 'asc']],
+        });
+
+        new DataTable("#data-pelajaran-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            paging: false,
+            filter: false,
+            order: [[0, 'asc']],
+        });
+    });
+
+    let currentDataValue;
+    function changeSelectData(select) {
+        const tables = {
+            hari: tableHari,
+            jam: tableJam,
+            kelas: tableKelas,
+            ruang: tableRuang,
+            pengajar: tablePengajar,
+            pelajaran: tablePelajaran,
+        }
+
+        if (currentDataValue) {
+            const selectedTable = tables[currentDataValue];
+            document.getElementById(`tambah-data-${currentDataValue}`).classList.add('hidden');
+            selectedTable.rows().deselect();
+        }
+        if (select.value) {
+            currentDataValue = select.value;
+            document.getElementById(`tambah-data-${currentDataValue}`).classList.remove('hidden');
+        } else {
+            currentDataValue = null;
+        }
+    }
+    
+    function clickSelectedData() {
+        const tables = {
+            hari: tableHari,
+            jam: tableJam,
+            kelas: tableKelas,
+            ruang: tableRuang,
+            pengajar: tablePengajar,
+            pelajaran: tablePelajaran,
+        }
+
+        const selectedTable = tables[currentDataValue];
+        selectedTable.rows().deselect();
+    }
+
+    function changeSelectData1() {
+        document.getElementById('tambah-data-hari2').classList.remove('hidden');
+    }
+
+    function changeSelectData2() {
+        document.getElementById('tambah-data-pelajaran2').classList.remove('hidden');
+    }
+
+    function clickSelectedBatasan() {
+        document.getElementById('capable').checked = false;
+        document.getElementById('select-data-1').value = '';
+        document.getElementById('tambah-data-hari2').classList.add('hidden');
+        document.getElementById('select-data-2').value = '';
+        document.getElementById('tambah-data-pelajaran2').classList.add('hidden');
+        document.querySelector('button[data-modal-hide="constraint-modal"]').click();
+        document.getElementById('div-data-table').classList.add('hidden');
+        document.getElementById('div-data-table2').classList.remove('hidden');
+    }
+</script>
+{% endblock %}

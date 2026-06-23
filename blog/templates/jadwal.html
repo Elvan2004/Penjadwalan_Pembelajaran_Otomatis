@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block additional_head %}
+<link href="https://cdn.datatables.net/2.3.8/css/dataTables.tailwindcss.css" rel="stylesheet" />
+{% endblock %}
+
+{% block title %}
+Data Jadwal
+{% endblock %}
+
+{% block content %}
+{% include "sidebar.html" %}
+
+<div class="ml-64 p-4">
+    <div class="flex justify-between items-end text-blue-900">
+        <h1 class="font-bold text-3xl">Data Jadwal</h1>
+    </div>
+    <hr class="my-3 border-blue-900"/>
+    <div class="flex justify-between items-start">
+        <div class="flex space-x-2">
+            <a href="/jadwal/add/" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Tambah</a>
+            <button id="remove" data-modal-target="remove-modal" data-modal-toggle="remove-modal" class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer hidden" type="button" onclick="loadRemoveModal()">Hapus</button>
+        </div>
+    </div>
+    {% if messages %}
+        <br/>
+        <div class="space-y-1">
+            {% for message in messages %}
+                <div class="px-4 py-3 text-md font-medium rounded-xl border
+                {% if message.tags == 'success' %}
+                    bg-green-100 text-green-800 border-green-300
+                {% elif message.tags == 'error' %}
+                    bg-red-100 text-red-800 border-red-300
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 text-yellow-800 border-yellow-300
+                {% elif message.tags == 'info' %}
+                    bg-blue-100 text-blue-800 border-blue-300
+                {% else %}
+                    bg-gray-100 text-gray-800 border-gray-300
+                {% endif %}
+                " role="alert">
+                    <p>{{ message }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <br/>
+    <table id="data-table" class="display">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Nama</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in datas %}
+                <tr data-id="{{ data.id }}" class="{% if data.status != 'done' %} text-red-600 {% endif %}">
+                    <td></td>
+                    <td>{{ data.name }}</td>
+                    <td>
+                        {% if data.status == 'done' %}
+                            Selesai
+                        {% else %}
+                            Draf
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/jadwal/view/{{ data.id }}/">
+                            <svg class="w-4 h-4 dark:text-white hover:text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% include "remove_modal.html" %}
+{% endblock %}
+
+{% block additional_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.tailwindcss.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js"></script>
+<script>
+    let table;
+
+    function updateButtons() {
+        const count = table.rows({ selected: true }).count();
+
+        let remove = document.getElementById("remove");
+
+        if (count > 0) {
+            remove.classList.remove("hidden");
+        } else {
+            remove.classList.add("hidden");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        table = new DataTable("#data-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                },
+                {
+                    orderable: false,
+                    targets: 3,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: [[2, 'asc'], [1, 'asc']],
+        });
+
+        table.on('select', updateButtons);
+        table.on('deselect', updateButtons);
+    });
+
+    function loadRemoveModal() {
+        const selectedRows = table.rows({ selected: true });
+        document.getElementById("remove-count").innerText = selectedRows.count();
+
+        const removeIds = Array.from(
+            selectedRows.nodes()
+        ).map(row => Number(row.dataset.id));
+        document.querySelector('#remove-modal input#remove-ids').value = JSON.stringify(removeIds);
+    }
+</script>
+{% endblock %}

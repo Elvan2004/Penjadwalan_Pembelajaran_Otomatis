@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+Jadwal | Kelas 1 - 2
+{% endblock %}
+
+{% block content %}
+{% include "sidebar.html" %}
+
+{% load static %}
+<div class="ml-64 p-4">
+    <div class="flex justify-between items-end">
+        <h1 class="font-bold text-3xl text-blue-900">Jadwal | Kelas 1 - 2</h1>
+        <span class="inline-flex items-center px-2 py-1 ring-1 ring-inset ring-green-300 text-green-700 text-md font-medium rounded-lg bg-green-100">Selesai</span>
+    </div>
+    <hr class="my-3 border-blue-900"/>
+    <div class="flex justify-between items-start">
+        <div class="flex space-x-2">
+            <button class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Export</button>
+            <button class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Ubah</button>
+        </div>
+        <button class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Hapus</button>
+    </div>
+    <br/>
+    <img src="{% static "images/schedule.png" %}" alt="Schedule"/>
+</div>
+{% endblock %}

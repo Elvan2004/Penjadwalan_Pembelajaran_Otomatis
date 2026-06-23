@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block additional_head %}
+<link href="https://cdn.datatables.net/2.3.8/css/dataTables.tailwindcss.css" rel="stylesheet" />
+{% endblock %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+{{ table_columns|json_script:"table-columns" }}
+{{ table_order|json_script:"table-order" }}
+{{ path|json_script:"path" }}
+{% load dynamic_tags %}
+{% include "sidebar.html" %}
+
+<div class="ml-64 p-4">
+    <div class="flex justify-between items-end text-blue-900">
+        <h1 class="font-bold text-3xl">{{ title }}</h1>
+        {% comment %} <div class="flex items-center">
+            <input id="archive-data" type="checkbox" value="" class="w-5 h-5 border border-default-medium rounded-sm bg-neutral-secondary-medium checked:text-blue-600">
+            <label for="archive-data" class="ms-2 text-md font-medium text-heading text-blue-900 select-none">Tampilkan data arsip</label>
+        </div> {% endcomment %}
+    </div>
+    <hr class="my-3 border-blue-900"/>
+    <div class="flex justify-between items-start">
+        <div class="flex space-x-2">
+            <button data-modal-target="add-modal" data-modal-toggle="add-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Tambah</button>
+            <button id="update" data-modal-target="update-modal" data-modal-toggle="update-modal" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer hidden" type="button" onclick="loadUpdateModal()">Ubah</button>
+            <button id="remove" data-modal-target="remove-modal" data-modal-toggle="remove-modal" class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer hidden" type="button" onclick="loadRemoveModal()">Hapus</button>
+        </div>
+        {% comment %} <button class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Import</button> {% endcomment %}
+    </div>
+    {% if messages %}
+        <br/>
+        <div class="space-y-1">
+            {% for message in messages %}
+                <div class="px-4 py-3 text-md font-medium rounded-xl border
+                {% if message.tags == 'success' %}
+                    bg-green-100 text-green-800 border-green-300
+                {% elif message.tags == 'error' %}
+                    bg-red-100 text-red-800 border-red-300
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 text-yellow-800 border-yellow-300
+                {% elif message.tags == 'info' %}
+                    bg-blue-100 text-blue-800 border-blue-300
+                {% else %}
+                    bg-gray-100 text-gray-800 border-gray-300
+                {% endif %}
+                " role="alert">
+                    <p>{{ message }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <br/>
+    <table id="data-table" class="display">
+        <thead>
+            <tr>
+                <th></th>
+                {% for val in table_columns.values %}
+                    <th>{{ val.label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in datas %}
+                <tr data-id="{{ data.id }}" class="{% if not data.active %} text-gray-400 {% endif %}">
+                    <td></td>
+                    {% for name, val in table_columns.items %}
+                        {% if val.type == 'checkbox' %}
+                            <td>
+                                {% if data|get_item:name %}
+                                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                    </svg>
+                                {% endif %}
+                            </td>
+                        {% else %}
+                            <td>{{ data|get_item:name }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% include "modal.html" %}
+{% endblock %}
+
+{% block additional_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.tailwindcss.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js"></script>
+<script>
+    let table;
+
+    function updateButtons() {
+        const count = table.rows({ selected: true }).count();
+
+        let update = document.getElementById("update");
+        let remove = document.getElementById("remove");
+
+        if (count == 1) {
+            update.classList.remove("hidden");
+            remove.classList.remove("hidden");
+        } else if (count > 1) {
+            update.classList.add("hidden");
+            remove.classList.remove("hidden");
+        } else {
+            update.classList.add("hidden");
+            remove.classList.add("hidden");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const order = JSON.parse(
+            document.getElementById('table-order').textContent
+        );
+        table = new DataTable("#data-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0,
+                    width: '40px',
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child',
+                headerCheckbox: 'select-page',
+            },
+            order: order,
+        });
+
+        table.on('select', updateButtons);
+        table.on('deselect', updateButtons);
+    });
+
+    function loadUpdateModal() {
+        const selectedRow = table.rows({ selected: true });
+        if (selectedRow.count() != 1) {
+            selectedRow.deselect();
+            return;
+        }
+        const id = selectedRow.nodes()[0].dataset.id;
+
+        const path = JSON.parse(
+            document.getElementById('path').textContent
+        );
+        
+        fetch(`/data/get/${path}/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            const record = data.record;
+            if (!record) {
+                document.querySelector('[data-modal-hide="update-modal"]').click();
+                alert('Data tidak ditemukan!');
+                return;
+            }
+
+            document.querySelector('#update-modal input#rec-id').value = record.id;
+
+            const tableColumns = Object.keys(JSON.parse(
+                document.getElementById('table-columns').textContent
+            ));
+            for (const column of tableColumns) {
+                const input = document.querySelector(`#update-modal input#${column}`);
+                if (input.type == "checkbox") {
+                    input.checked = Boolean(record[column]);
+                } else {
+                    input.value = record[column];
+                }
+            }
+        });
+    }
+
+    function loadRemoveModal() {
+        const selectedRows = table.rows({ selected: true });
+        document.getElementById("remove-count").innerText = selectedRows.count();
+
+        const removeIds = Array.from(
+            selectedRows.nodes()
+        ).map(row => Number(row.dataset.id));
+        document.querySelector('#remove-modal input#remove-ids').value = JSON.stringify(removeIds);
+    }
+</script>
+{% endblock %}

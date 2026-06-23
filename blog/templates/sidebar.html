@@ -1,0 +1,66 @@
+{% load static %}
+<aside id="sidebar-multi-level-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 bg-white" aria-label="Sidebar">
+    <div class="h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft border-e border-gray-300 border-default">
+        <a href="/" class="flex items-center ps-2.5 mb-5">
+            <img src="{% static "images/logo.png" %}" class="h-6 me-3" alt="Logo" />
+            <span class="self-center text-lg text-heading font-bold whitespace-nowrap text-blue-600">ScHeD</span>
+        </a>
+        <ul class="space-y-2 font-medium">
+            <li>
+                <a href="/dasbor" class="flex items-center px-2 py-1.5 text-body rounded-lg group {% if request.resolver_match.url_name == 'Dasbor' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/jadwal" class="flex items-center px-2 py-1.5 text-body rounded-lg group {% if request.resolver_match.url_name == 'Jadwal' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">
+                    <span class="flex-1 whitespace-nowrap">Jadwal</span>
+                </a>
+            </li>
+            <li>
+                <button type="button" class="flex items-center w-full justify-between px-2 py-1.5 text-body rounded-lg hover:bg-gray-100 hover:text-blue-600 group cursor-pointer" aria-controls="sidebar-dropdown" data-collapse-toggle="sidebar-dropdown" onclick="toggleDataArrow()">
+                    <span class="flex-1 text-left rtl:text-right whitespace-nowrap">Data</span>
+                    <svg class="w-5 h-5 {% if is_data_page %} rotate-180 {% endif %}" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" id="data-arrow"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/></svg>
+                </button>
+                <ul id="sidebar-dropdown" class="{% if not is_data_page %} hidden {% endif %} py-2 space-y-2">
+                    <li>
+                        <a href="/hari" class="pl-10 flex items-center px-2 py-1.5 text-body font-normal rounded-lg group {% if request.resolver_match.url_name == 'Hari' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">Hari</a>
+                    </li>
+                    <li>
+                        <a href="/jam-pembelajaran" class="pl-10 flex items-center px-2 py-1.5 text-body font-normal rounded-lg group {% if request.resolver_match.url_name == 'Jam Pembelajaran' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">Jam Pembelajaran</a>
+                    </li>
+                    <li>
+                        <a href="/kelas" class="pl-10 flex items-center px-2 py-1.5 text-body font-normal rounded-lg group {% if request.resolver_match.url_name == 'Kelas' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">Kelas</a>
+                    </li>
+                    <li>
+                        <a href="/ruang-kelas" class="pl-10 flex items-center px-2 py-1.5 text-body font-normal rounded-lg group {% if request.resolver_match.url_name == 'Ruang Kelas' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">Ruang Kelas</a>
+                    </li>
+                    <li>
+                        <a href="/pengajar" class="pl-10 flex items-center px-2 py-1.5 text-body font-normal rounded-lg group {% if request.resolver_match.url_name == 'Pengajar' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">Pengajar</a>
+                    </li>
+                    <li>
+                        <a href="/pelajaran" class="pl-10 flex items-center px-2 py-1.5 text-body font-normal rounded-lg group {% if request.resolver_match.url_name == 'Pelajaran' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">Pelajaran</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="/profil" class="flex items-center px-2 py-1.5 text-body rounded-lg group {% if request.resolver_match.url_name == 'Profil' %} bg-gray-100 text-blue-600 {% else %} hover:bg-gray-100 hover:text-blue-600 {% endif %}">
+                    <span class="flex-1 whitespace-nowrap">Data Profil</span>
+                </a>
+            </li>
+            <br/>
+            <li>
+                <a href="/logout/" class="flex items-center px-2 py-1.5 text-body rounded-lg hover:bg-gray-100 hover:text-red-600 group">
+                    <svg class="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"/></svg>
+                    <span class="flex-1 ms-3 whitespace-nowrap">Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</aside>
+
+<script>
+    function toggleDataArrow() {
+        let arrow = document.getElementById("data-arrow");
+        arrow.classList.toggle("rotate-180");
+    }
+</script>
