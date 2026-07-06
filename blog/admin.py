@@ -11,4 +11,6 @@ admin.site.register([
     models.Educator,
     models.Lesson,
     models.Schedule,
+    models.Data,
+    models.Constraint,
 ])

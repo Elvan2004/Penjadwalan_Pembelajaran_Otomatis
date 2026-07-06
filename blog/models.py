@@ -77,3 +77,33 @@ class Schedule(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+class Data(models.Model):
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='+')
+    entity = models.CharField(choices=[
+        ('hari', 'Hari'),
+        ('jam_pembelajaran', 'Jam Pembelajaran'),
+        ('kelas', 'Kelas'),
+        ('ruang_kelas', 'Ruang Kelas'),
+        ('pengajar', 'Pengajar'),
+        ('pelajaran', 'Pelajaran'),
+    ])
+    entity_id = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.schedule.name} | {self.entity} (id: {self.entity_id})"
+
+class Constraint(models.Model):
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='+')
+    data1 = models.ForeignKey(Data, on_delete=models.CASCADE, related_name='+')
+    data2 = models.ForeignKey(Data, on_delete=models.CASCADE, related_name='+')
+    is_capable = models.BooleanField()
+
+    def __str__(self):
+        return f"{self.schedule.name} | {self.data1.entity} (id: {self.data1.entity_id}) & {self.data2.entity} (id: {self.data2.entity_id}) - " + ("Bersedia" if self.is_capable else "Tidak Bersedia")
+
+class ScheduleData(models.Model):
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='+')
+    class_id = models.ForeignKey(Class, on_delete=models.RESTRICT, related_name='+')
+    day_id = models.ForeignKey(Day, on_delete=models.RESTRICT, related_name='+')
+    lesson_hour_id = models.ForeignKey(LessonHour, on_delete=models.RESTRICT, related_name='+')

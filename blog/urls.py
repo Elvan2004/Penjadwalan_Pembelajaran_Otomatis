@@ -12,7 +12,6 @@ urlpatterns = [
 
     path("dasbor/", views.dasbor, name="Dasbor"),
     path("profil/", views.profil, name="Profil"),
-    path("profil/update/", views.profil_update, name="Profil Update"),
 
     path("hari/", views.hari, name="Hari"),
     path("jam-pembelajaran/", views.jam_pembelajaran, name="Jam Pembelajaran"),
@@ -27,6 +26,15 @@ urlpatterns = [
     path("data/remove/<str:data>/", views.data_remove, name="Data Remove"),
 
     path("jadwal/", views.jadwal, name="Jadwal"),
-    path("jadwal/add/", views.jadwal_add, name="Jadwal"),
+    path("jadwal/add/", views.jadwal_add, name="Jadwal Add"),
+
+    path("jadwal/detail/<int:id>/", views.jadwal_detail, name="Jadwal"),
+    path("jadwal/get/<str:data>/", views.jadwal_get_data, name="Jadwal Get Data"),
+
+    path("jadwal/save/", views.jadwal_save, name="Jadwal Save"),
+    path("jadwal/cancel/<int:id>/", views.jadwal_cancel, name="Jadwal Cancel"),
+    path("jadwal/delete/<int:id>/", views.jadwal_delete, name="Jadwal Delete"),
+
+    path("jadwal/generate/<int:id>/", views.jadwal_generate, name="Jadwal Generate"),
     path("jadwal/view/<int:id>/", views.jadwal_view, name="Jadwal"),
 ]
