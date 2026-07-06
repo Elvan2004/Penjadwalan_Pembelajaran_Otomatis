@@ -77,6 +77,8 @@
                                     </svg>
                                 {% endif %}
                             </td>
+                        {% elif val.type == 'time' %}
+                            <td>{{ data|get_item:name|time:"H:i:s" }}</td>
                         {% else %}
                             <td>{{ data|get_item:name }}</td>
                         {% endif %}

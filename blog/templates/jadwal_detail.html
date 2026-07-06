@@ -1,0 +1,1371 @@
+{% extends "base.html" %}
+
+{% block additional_head %}
+<link href="https://cdn.datatables.net/2.3.8/css/dataTables.tailwindcss.css" rel="stylesheet" />
+{% endblock %}
+
+{% block title %}
+Buat Jadwal
+{% endblock %}
+
+{% block content %}
+{% include "sidebar.html" %}
+
+{% csrf_token %}
+<input type="hidden" name="schedule_id" value="{{ schedule_id }}"/>
+<div class="ml-64 p-4">
+    <div class="flex justify-between items-end">
+        <h1 class="font-bold text-3xl text-blue-900">Buat Jadwal</h1>
+        <span id="draft-status" class="items-center px-2 py-1 ring-1 ring-inset ring-red-300 text-red-700 text-md font-medium rounded-lg bg-red-100 {% if schedule_status == 'done' %} hidden {% else %} inline-flex {% endif %}">Draf</span>
+        <span id="done-status" class="items-center px-2 py-1 ring-1 ring-inset ring-green-300 text-green-700 text-md font-medium rounded-lg bg-green-100 {% if schedule_status != 'done' %} hidden {% else %} inline-flex {% endif %}">Selesai</span>
+    </div>
+    <hr class="my-3 border-blue-900"/>
+    <div class="flex justify-between items-start">
+        <div class="flex space-x-2">
+            <button data-modal-target="data-modal" data-modal-toggle="data-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" onclick="clickModalData()">Tambah Data</button>
+            <button data-modal-target="constraint-modal" data-modal-toggle="constraint-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" onclick="clickModalBatasan()">Tambah Batasan</button>
+        </div>
+        <a href="/jadwal/generate/{{ schedule_id }}" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer {% if hide_initial_generate_button %} hidden {% endif %}" id="generate-jadwal">Buat Jadwal</a>
+    </div>
+    <div class="flex justify-between items-start mt-3">
+        <div class="flex space-x-2">
+            <button class="text-white bg-green-600 box-border border border-transparent hover:bg-green-700 focus:ring-3 focus:ring-green-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" onclick="save()">Simpan</button>
+            <button data-modal-target="cancel-jadwal-modal" data-modal-toggle="cancel-jadwal-modal" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Batal</button>
+        </div>
+        <button data-modal-target="delete-jadwal-modal" data-modal-toggle="delete-jadwal-modal" class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Hapus</button>
+    </div>
+    {% if messages %}
+        <br id="system-message-br"/>
+        <div class="space-y-1" id="system-message-div">
+            {% for message in messages %}
+                <div class="px-4 py-3 text-md font-medium rounded-xl border
+                {% if message.tags == 'success' %}
+                    bg-green-100 text-green-800 border-green-300
+                {% elif message.tags == 'error' %}
+                    bg-red-100 text-red-800 border-red-300
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 text-yellow-800 border-yellow-300
+                {% elif message.tags == 'info' %}
+                    bg-blue-100 text-blue-800 border-blue-300
+                {% else %}
+                    bg-gray-100 text-gray-800 border-gray-300
+                {% endif %}
+                " role="alert">
+                    <p>{{ message }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div id="saved-success-alert" class="hidden">
+        <br/>
+        <div class="px-4 py-3 text-md font-medium rounded-xl border bg-green-100 text-green-800 border-green-300" role="alert">
+            <p></p>
+        </div>
+    </div>
+    <div id="saved-failed-alert" class="hidden">
+        <br/>
+        <div class="px-4 py-3 text-md font-medium rounded-xl border bg-red-100 text-red-800 border-red-300" role="alert">
+            <p></p>
+        </div>
+    </div>
+    <br/>
+    <div class="grid grid-cols-5">
+        <label for="schedule_name" class="block text-md font-medium text-blue-900 my-auto">Nama Jadwal</label>
+        <div class="col-span-4">
+            <input id="schedule_name" type="text" name="schedule_name" autofocus required value="{{ schedule_name }}" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" oninput="inputScheduleName()"/>
+        </div>
+    </div>
+    <br/><br/>
+    <h2 class="font-semibold text-2xl text-blue-900 mb-3">Data</h2>
+    <div class="grid grid-cols-3 gap-x-4 gap-y-3">
+        <button data-modal-target="hari-modal" data-modal-toggle="hari-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Hari</button>
+        <button data-modal-target="jam-modal" data-modal-toggle="jam-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Jam</button>
+        <button data-modal-target="kelas-modal" data-modal-toggle="kelas-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Kelas</button>
+        <button data-modal-target="ruang-modal" data-modal-toggle="ruang-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Ruang</button>
+        <button data-modal-target="pengajar-modal" data-modal-toggle="pengajar-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Pengajar</button>
+        <button data-modal-target="pelajaran-modal" data-modal-toggle="pelajaran-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Lihat Data Data Pelajaran</button>
+    </div>
+    <br/><br/>
+    <h2 class="font-semibold text-2xl text-blue-900 mb-4">Batasan</h2>
+    <div>
+        <table id="batasan-table" data-name="batasan" class="display">
+            <thead>
+                <tr>
+                    <th>Data 1</th>
+                    <th>Data 2</th>
+                    <th>Bersedia</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in batasan %}
+                    <tr data-data1="{{ data.data1 }}" data-id1="{{ data.id1 }}" data-data2="{{ data.data2 }}" data-id2="{{ data.id2 }}" data-capable="{% if data.capable %}true{% else %}false{% endif %}">
+                        <td>{{ data.data1_content }}</td>
+                        <td>{{ data.data2_content }}</td>
+                        <td>
+                            {% if data.capable %}
+                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                </svg>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="data-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Tambah Data
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="data-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="hidden mt-4 px-4 py-3 text-md font-medium rounded-xl border bg-green-100 text-green-800 border-green-300" id="success-add-data-alert" role="alert">
+                <p>Berhasil menambahkan data <span id="success-add-data-alert-span"></span>.</p>
+            </div>
+            <div class="hidden mt-4 px-4 py-3 text-md font-medium rounded-xl border bg-red-100 text-red-800 border-red-300" id="failed-add-data-alert" role="alert">
+                <p>Gagal menambahkan data <span id="failed-add-data-alert-span"></span>.</p>
+            </div>
+            <div class="flex gap-x-2 mt-4">
+                <select id="select-data" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData(this)">
+                    <option value="" selected>Pilih Data</option>
+                    <option value="hari">Hari</option>
+                    <option value="jam-pembelajaran">Jam</option>
+                    <option value="kelas">Kelas</option>
+                    <option value="ruang-kelas">Ruang</option>
+                    <option value="pengajar">Pengajar</option>
+                    <option value="pelajaran">Pelajaran</option>
+                </select>
+                <button class="hidden text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" id="tambah-selected-data" onclick="addSelectedData()">Tambah</button>
+            </div>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data-table-element">
+                <div class="hidden px-4 py-3 text-md font-medium rounded-xl border bg-red-100 text-red-800 border-red-300" id="not-found-alert" role="alert">
+                    <p>Data tidak ditemukan.</p>
+                </div>
+                <table id="tambah-data-table" class="display">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="constraint-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Tambah Batasan
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="constraint-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="hidden mt-4 px-4 py-3 text-md font-medium rounded-xl border bg-green-100 text-green-800 border-green-300" id="success-add-batasan-alert" role="alert">
+                <p>Berhasil menambahkan batasan.</p>
+            </div>
+            <div class="hidden mt-4 px-4 py-3 text-md font-medium rounded-xl border bg-red-100 text-red-800 border-red-300" id="failed-add-batasan-alert" role="alert">
+                <p>Gagal menambahkan batasan.</p>
+            </div>
+            <br/>
+            <label for="select-data-1" class="block mb-2.5 text-lg font-medium text-heading">Data 1</label>
+            <select id="select-data-1" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData1(this)">
+                <option value="" selected>Pilih Data</option>
+                <option value="hari">Hari</option>
+                <option value="jam-pembelajaran">Jam</option>
+                <option value="kelas">Kelas</option>
+                <option value="ruang-kelas">Ruang</option>
+                <option value="pengajar">Pengajar</option>
+                <option value="pelajaran">Pelajaran</option>
+            </select>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data1-table-element">
+                <div class="hidden px-4 py-3 text-md font-medium rounded-xl border bg-red-100 text-red-800 border-red-300" id="data1-not-found-alert" role="alert">
+                    <p>Data tidak ditemukan.</p>
+                </div>
+                <table id="tambah-data1-table" class="display">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <hr class="my-5 border-gray-300"/>
+            <label for="select-data-2" class="block mb-2.5 text-lg font-medium text-heading">Data 2</label>
+            <select id="select-data-2" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData2(this)">
+                <option value="" selected>Pilih Data</option>
+                <option value="hari">Hari</option>
+                <option value="jam-pembelajaran">Jam</option>
+                <option value="kelas">Kelas</option>
+                <option value="ruang-kelas">Ruang</option>
+                <option value="pengajar">Pengajar</option>
+                <option value="pelajaran">Pelajaran</option>
+            </select>
+            <div class="pt-4 md:pt-5 hidden" id="tambah-data2-table-element">
+                <div class="hidden px-4 py-3 text-md font-medium rounded-xl border bg-red-100 text-red-800 border-red-300" id="data2-not-found-alert" role="alert">
+                    <p>Data tidak ditemukan.</p>
+                </div>
+                <table id="tambah-data2-table" class="display">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="constraint-button" class="hidden">
+                <hr class="my-5 border-gray-300"/>
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <input id="capable" type="checkbox" class="w-5 h-5 border border-default-medium rounded-sm bg-neutral-secondary-medium checked:text-blue-600">
+                        <label for="capable" class="ms-2 text-md font-medium text-heading text-blue-900 select-none">Bersedia</label>
+                    </div>
+                    <button class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" id="tambah-selected-batasan" onclick="addSelectedBatasan()">Tambah</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="hari-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Hari
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="hari-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div>
+                <table id="data-table-hari" data-name="hari" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Urutan</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in hari %}
+                            <tr data-id="{{ data.id }}">
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.sequence }}</td>
+                                <td>
+                                    <svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="jam-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Jam
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="jam-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div>
+                <table id="data-table-jam" data-name="jam_pembelajaran" class="display">
+                    <thead>
+                        <tr>
+                            <th>Mulai</th>
+                            <th>Selesai</th>
+                            <th>Urutan</th>
+                            <th>Istirahat</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in jam_pembelajaran %}
+                            <tr data-id="{{ data.id }}">
+                                <td>{{ data.start_time|time:"H:i:s" }}</td>
+                                <td>{{ data.finish_time|time:"H:i:s" }}</td>
+                                <td>{{ data.sequence }}</td>
+                                <td>
+                                    {% if data.is_break %}
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                        </svg>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="kelas-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Kelas
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="kelas-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div>
+                <table id="data-table-kelas" data-name="kelas" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Urutan</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in kelas %}
+                            <tr data-id="{{ data.id }}">
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.sequence }}</td>
+                                <td>
+                                    <svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="ruang-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Ruang
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="ruang-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div>
+                <table id="data-table-ruang" data-name="ruang_kelas" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Kapasitas Kelas</th>
+                            <th>Berbagi Kelas</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in ruang_kelas %}
+                            <tr data-id="{{ data.id }}">
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.class_capacity }}</td>
+                                <td>
+                                    {% if data.is_same_time_shareable %}
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                        </svg>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pengajar-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Pengajar
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="pengajar-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div>
+                <table id="data-table-pengajar" data-name="pengajar" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in pengajar %}
+                            <tr data-id="{{ data.id }}">
+                                <td>{{ data.name }}</td>
+                                <td>
+                                    <svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pelajaran-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between border-b border-default border-gray-300 pb-4 md:pb-5">
+                <h3 class="text-lg font-medium text-heading">
+                    Data Pelajaran
+                </h3>
+                <button type="button" class="text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="pelajaran-modal">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div>
+                <table id="data-table-pelajaran" data-name="pelajaran" class="display">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Slot Waktu</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in pelajaran %}
+                            <tr data-id="{{ data.id }}">
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.time_slot }}</td>
+                                <td>
+                                    <svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cancel-jadwal-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <button type="button" class="absolute top-3 end-2.5 text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="cancel-jadwal-modal">
+                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5 text-center">
+                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                <h3 class="mb-6 text-body">Apakah Anda yakin ingin membatalkan perubahan pada jadwal ini?</h3>
+                <div class="flex items-center space-x-4 justify-center">
+                    <a href="/jadwal/cancel/{{ schedule_id }}" class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Yakin</a>
+                    <button data-modal-hide="cancel-jadwal-modal" type="button" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 hover:text-heading focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Tidak</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="delete-jadwal-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal header -->
+            <button type="button" class="absolute top-3 end-2.5 text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-lg text-sm w-9 h-9 ms-auto inline-flex justify-center items-center cursor-pointer" data-modal-hide="delete-jadwal-modal">
+                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/></svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5 text-center">
+                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                <h3 class="mb-6 text-body">Apakah Anda yakin ingin menghapus jadwal ini?</h3>
+                <div class="flex items-center space-x-4 justify-center">
+                    <a href="/jadwal/delete/{{ schedule_id }}" class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Yakin</a>
+                    <button data-modal-hide="delete-jadwal-modal" type="button" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 hover:text-heading focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="delete-confirmation-modal" data-modal-backdrop="static" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full bg-gray-900/60">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-xl shadow-sm p-4 md:p-6">
+            <!-- Modal body -->
+            <div class="p-4 md:p-5 text-center">
+                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                <h3 class="mb-6 text-body">Menghapus data ini juga akan menghapus batasan yang memakai data ini. Apakah Anda yakin?</h3>
+                <div class="flex items-center space-x-4 justify-center">
+                    <button id="confirm-delete-confirmation" type="button" class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Yakin</button>
+                    <button id="cancel-delete-confirmation" type="button" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 hover:text-heading focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-xl text-sm px-4 py-2.5 focus:outline-none cursor-pointer">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.tailwindcss.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/dataTables.select.js"></script>
+<script src="https://cdn.datatables.net/select/3.1.3/js/select.dataTables.js"></script>
+<script>
+    let currentSelectedData;
+    let tambahDataTable;
+
+    let dataTableHari;
+    let dataTableJam;
+    let dataTableKelas;
+    let dataTableRuang;
+    let dataTablePengajar;
+    let dataTablePelajaran;
+
+    let tambahData1Table;
+    let tambahData2Table;
+    let batasanTable;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        dataTableHari = new DataTable("#data-table-hari", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 2,
+                    width: '40px',
+                }
+            ],
+            paging: false,
+            filter: false,
+            order: [[1, 'asc']],
+        });
+        dataTableJam = new DataTable("#data-table-jam", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 4,
+                    width: '40px',
+                }
+            ],
+            paging: false,
+            filter: false,
+            order: [[2, 'asc']],
+        });
+        dataTableKelas = new DataTable("#data-table-kelas", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 2,
+                    width: '40px',
+                }
+            ],
+            paging: false,
+            filter: false,
+            order: [[1, 'asc']],
+        });
+        dataTableRuang = new DataTable("#data-table-ruang", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 3,
+                    width: '40px',
+                }
+            ],
+            paging: false,
+            filter: false,
+            order: [[0, 'asc']],
+        });
+        dataTablePengajar = new DataTable("#data-table-pengajar", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 1,
+                    width: '40px',
+                }
+            ],
+            paging: false,
+            filter: false,
+            order: [[0, 'asc']],
+        });
+        dataTablePelajaran = new DataTable("#data-table-pelajaran", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 2,
+                    width: '40px',
+                }
+            ],
+            paging: false,
+            filter: false,
+            order: [[0, 'asc']],
+        });
+
+        batasanTable = new DataTable("#batasan-table", {
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 3,
+                    width: '40px',
+                }
+            ],
+            order: [[0, 'asc'], [1, 'asc']],
+        });
+    });
+
+    function inputScheduleName() {
+        document.getElementById('generate-jadwal').classList.add('hidden');
+    }
+
+    function clickModalData() {
+        const selectData = document.getElementById('select-data');
+        selectData.value = '';
+        changeSelectData(selectData);
+
+        document.getElementById('success-add-data-alert').classList.add('hidden');
+        document.getElementById('failed-add-data-alert').classList.add('hidden');
+    }
+
+    function clickModalBatasan() {
+        const selectData1 = document.querySelector('select#select-data-1');
+        const selectData2 = document.querySelector('select#select-data-2');
+
+        selectData1.value = '';
+        changeSelectData1(selectData1);
+        selectData2.value = '';
+        changeSelectData2(selectData2);
+        
+        document.getElementById('success-add-batasan-alert').classList.add('hidden');
+        document.getElementById('failed-add-batasan-alert').classList.add('hidden');
+    }
+
+    function checkedIcon() {
+        return '<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/></svg>';
+    }
+
+    function removeIcon() {
+        return '<svg onclick="removeSelectedData(this)" class="w-5 h-5 dark:text-white hover:text-red-600 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/></svg>';
+    }
+
+    function updateDataButtons(table) {
+        const count = table.rows({ selected: true }).count();
+
+        const button = document.getElementById("tambah-selected-data");
+
+        if (count > 0) {
+            button.classList.remove("hidden");
+        } else {
+            button.classList.add("hidden");
+        }
+    }
+
+    async function changeSelectData(select) {
+        document.getElementById('tambah-data-table-element').classList.add('hidden');
+        document.getElementById('not-found-alert').classList.add('hidden');
+        if (tambahDataTable) {
+            tambahDataTable.rows().deselect();
+            tambahDataTable.destroy();
+        }
+
+        currentSelectedData = select.value;
+        
+        if (select.value) {
+            let columns;
+            let order;
+            let datas;
+
+            await fetch(`/jadwal/get/${select.value}/`)
+            .then(response => response.json())
+            .then(data => {
+                columns = data.columns;
+                order = data.order,
+                datas = data.datas;
+            });
+
+            if (!columns && !datas) {
+                document.getElementById('not-found-alert').classList.remove('hidden');
+                document.getElementById('tambah-data-table-element').classList.remove('hidden');
+                return;
+            }
+
+            let table = document.querySelector('#tambah-data-table');
+            if (!table) {
+                table = document.createElement('table');
+                table.id = 'tambah-data-table';
+                table.classList.add('display');
+
+                table.appendChild(document.createElement('thead'));
+                table.appendChild(document.createElement('tbody'));
+
+                document.querySelector('#tambah-data-table-element').appendChild(table);
+            }
+
+            let thead = document.querySelector('#tambah-data-table thead');
+            if (!thead) {
+                thead = document.createElement('thead');
+                table.appendChild(thead);
+            }
+            thead.innerHTML = '';
+
+            const tr = document.createElement('tr');
+            tr.appendChild(document.createElement('th'));
+
+            for (let [name, val] of Object.entries(columns)) {
+                const th = document.createElement('th');
+                th.textContent = val.label;
+                tr.appendChild(th);
+            }
+            thead.appendChild(tr);
+
+            let tbody = document.querySelector('#tambah-data-table tbody');
+            if (!tbody) {
+                tbody = document.createElement('tbody');
+                table.appendChild(tbody);
+            }
+            tbody.innerHTML = '';
+            
+            datas.forEach(data => {
+                const tbodyTr = document.createElement('tr');
+                tbodyTr.dataset.id = data.id;
+                tbodyTr.appendChild(document.createElement('td'));
+
+                for (let [name, val] of Object.entries(columns)) {
+                    const td = document.createElement('td');
+                    if (val.type == 'checkbox') {
+                        if (Boolean(data[name])) {
+                            td.innerHTML = checkedIcon();
+                        }
+                    } else {
+                        td.textContent = data[name];
+                    }
+                    tbodyTr.appendChild(td);
+                }
+                tbody.appendChild(tbodyTr);
+            });
+
+            tambahDataTable = new DataTable("#tambah-data-table", {
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+                },
+                columnDefs: [
+                    {
+                        orderable: false,
+                        render: DataTable.render.select(),
+                        targets: 0,
+                        width: '40px',
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child',
+                    headerCheckbox: 'select-page',
+                },
+                order: order,
+            });
+
+            tambahDataTable.on('select', () => updateDataButtons(tambahDataTable));
+            tambahDataTable.on('deselect', () => updateDataButtons(tambahDataTable));
+
+            document.getElementById('tambah-data-table-element').classList.remove('hidden');
+        }
+    }
+
+    function getCurrentTable(name) {
+        const dataTable = {
+            hari: dataTableHari,
+            jam_pembelajaran: dataTableJam,
+            kelas: dataTableKelas,
+            ruang_kelas: dataTableRuang,
+            pengajar: dataTablePengajar,
+            pelajaran: dataTablePelajaran,
+            batasan: batasanTable,
+        }
+        return dataTable[name];
+    }
+    
+    function addSelectedData() {
+        let success = false;
+        const processedData = currentSelectedData.replace('-', ' ');
+
+        const table = getCurrentTable(currentSelectedData.replace('-', '_'));
+        if (table) {
+            const existingDataArrays = Array.from(table.rows().nodes());
+
+            const selectedTableData = tambahDataTable.rows({ selected: true });
+            selectedTableData.every(function() {
+                const node = this.node();
+                const id = Number(node.dataset.id);
+
+                const exists = existingDataArrays.some(row => Number(row.dataset.id) === id);
+                if (!exists) {
+                    const data = [...this.data()];
+                    data.shift();
+                    data.push(removeIcon());
+                    
+                    const createdNode = table.row.add(data).draw().node();
+                    createdNode.dataset.id = id;
+                }
+            });
+
+            success = true;
+        }
+
+        const selectData = document.getElementById('select-data');
+        selectData.value = '';
+        changeSelectData(selectData);
+        if (success) {
+            document.getElementById('success-add-data-alert-span').innerText = processedData;
+            document.getElementById('success-add-data-alert').classList.remove('hidden');
+            document.getElementById('failed-add-data-alert').classList.add('hidden');
+
+            document.getElementById('generate-jadwal').classList.add('hidden');
+        } else {
+            document.getElementById('failed-add-data-alert-span').innerText = processedData;
+            document.getElementById('success-add-data-alert').classList.add('hidden');
+            document.getElementById('failed-add-data-alert').classList.remove('hidden');
+        }
+    }
+
+    function deleteConfirmation() {
+        return new Promise(resolve => {
+            const modal = new Modal(document.getElementById('delete-confirmation-modal'), {
+                backdrop: 'static',
+                closable: false,
+            });
+            modal.show();
+
+            document.getElementById('confirm-delete-confirmation').onclick = function() {
+                modal.hide();
+                resolve(true);
+            };
+
+            document.getElementById('cancel-delete-confirmation').onclick = function() {
+                modal.hide();
+                resolve(false);
+            };
+        });
+    }
+
+    async function removeSelectedData(selectedData) {
+        const tableName = selectedData.closest('table').dataset.name;
+        const table = getCurrentTable(tableName);
+        if (!table) {
+            return;
+        }
+
+        const row = selectedData.closest('tr');
+        if (tableName != 'batasan') {
+            const id = Number(row.dataset.id);
+
+            const existingBatasanArrays = Array.from(batasanTable.rows().nodes());
+            const batasanToDelete = existingBatasanArrays.filter(batasan =>
+                (batasan.dataset.data1 === tableName.replace('_', '-') && Number(batasan.dataset.id1) === id) ||
+                (batasan.dataset.data2 === tableName.replace('_', '-') && Number(batasan.dataset.id2) === id)
+            );
+
+            if (batasanToDelete.length) {
+                const confirmedDelete = await deleteConfirmation();
+                if (!confirmedDelete) {
+                    return;
+                }
+                batasanTable.rows(batasanToDelete).remove().draw();
+            }
+        }
+
+        table.row(row).remove().draw();
+        document.getElementById('generate-jadwal').classList.add('hidden');
+    }
+
+    function updateConstraintButtons() {
+        const data1Count = tambahData1Table ? tambahData1Table.rows({ selected: true }).count() : 0;
+        const data2Count = tambahData2Table ? tambahData2Table.rows({ selected: true }).count() : 0;
+        
+        const element = document.getElementById("constraint-button");
+
+        if (data1Count > 0 && data2Count > 0) {
+            element.classList.remove("hidden");
+        } else {
+            element.classList.add("hidden");
+        }
+    }
+
+    function changeSelectData1(select) {
+        document.getElementById('tambah-data1-table-element').classList.add('hidden');
+        document.getElementById('data1-not-found-alert').classList.add('hidden');
+
+        if (tambahData1Table) {
+            tambahData1Table.rows().deselect();
+            tambahData1Table.destroy();
+        }
+
+        const otherSelect = document.querySelector('select#select-data-2');
+        otherSelect.querySelectorAll('option').forEach(option => {
+            option.disabled = false;
+        });
+        
+        const selectedValue = select.value
+        if (selectedValue) {
+            otherSelect.querySelector(`option[value=${selectedValue}]`).disabled = true;
+
+            let table = document.querySelector('#tambah-data1-table');
+            if (!table) {
+                table = document.createElement('table');
+                table.id = 'tambah-data1-table';
+                table.classList.add('display');
+
+                table.appendChild(document.createElement('thead'));
+                table.appendChild(document.createElement('tbody'));
+
+                document.querySelector('#tambah-data1-table-element').appendChild(table);
+            }
+
+            const dataTable = getCurrentTable(selectedValue.replace('-', '_'));
+
+            if (!dataTable) {
+                document.getElementById('data1-not-found-alert').classList.remove('hidden');
+                document.getElementById('tambah-data1-table-element').classList.remove('hidden');
+                return;
+            }
+
+            const tableHeaders = dataTable.table().header().querySelectorAll('th');
+            
+            let thead = document.querySelector('#tambah-data1-table thead');
+            if (!thead) {
+                thead = document.createElement('thead');
+                table.appendChild(thead);
+            }
+            thead.innerHTML = '';
+            const theadTr = document.createElement('tr');
+            theadTr.appendChild(document.createElement('th'));
+            tableHeaders.forEach(header => {
+                if (header.textContent) {
+                    const th = document.createElement('th');
+                    th.textContent = header.textContent;
+                    theadTr.appendChild(th);
+                }
+            });
+            thead.appendChild(theadTr);
+
+            let tbody = document.querySelector('#tambah-data1-table tbody');
+            if (!tbody) {
+                tbody = document.createElement('tbody');
+                table.appendChild(tbody);
+            }
+            tbody.innerHTML = '';
+
+            const rows = dataTable.rows();
+            rows.every(function() {
+                const tbodyTr = document.createElement('tr');
+                tbodyTr.dataset.id = Number(this.node().dataset.id);
+
+                const datas = [...this.data()];
+                datas.pop();
+                datas.unshift('');
+                
+                datas.forEach(data => {
+                    const td = document.createElement('td');
+                    td.innerHTML = data;
+                    tbodyTr.appendChild(td);
+                });
+                tbody.appendChild(tbodyTr);
+            });
+
+            const [[columnIndex, direction]] = dataTable.order();
+            tambahData1Table = new DataTable("#tambah-data1-table", {
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+                },
+                columnDefs: [
+                    {
+                        orderable: false,
+                        render: DataTable.render.select(),
+                        targets: 0,
+                        width: '40px',
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child',
+                    headerCheckbox: 'select-page',
+                },
+                order: [[columnIndex + 1, direction]],
+            });
+            
+            tambahData1Table.on('select', () => updateConstraintButtons());
+            tambahData1Table.on('deselect', () => updateConstraintButtons());
+            
+            document.getElementById('tambah-data1-table-element').classList.remove('hidden');
+        }
+    }
+
+    function changeSelectData2(select) {
+        document.getElementById('tambah-data2-table-element').classList.add('hidden');
+        document.getElementById('data2-not-found-alert').classList.add('hidden');
+
+        if (tambahData2Table) {
+            tambahData2Table.rows().deselect();
+            tambahData2Table.destroy();
+        }
+
+        const otherSelect = document.querySelector('select#select-data-1');
+        otherSelect.querySelectorAll('option').forEach(option => {
+            option.disabled = false;
+        });
+        
+        const selectedValue = select.value
+        if (selectedValue) {
+            otherSelect.querySelector(`option[value=${selectedValue}]`).disabled = true;
+
+            let table = document.querySelector('#tambah-data2-table');
+            if (!table) {
+                table = document.createElement('table');
+                table.id = 'tambah-data2-table';
+                table.classList.add('display');
+
+                table.appendChild(document.createElement('thead'));
+                table.appendChild(document.createElement('tbody'));
+
+                document.querySelector('#tambah-data2-table-element').appendChild(table);
+            }
+
+            const dataTable = getCurrentTable(selectedValue.replace('-', '_'));
+
+            if (!dataTable) {
+                document.getElementById('data2-not-found-alert').classList.remove('hidden');
+                document.getElementById('tambah-data2-table-element').classList.remove('hidden');
+                return;
+            }
+
+            const tableHeaders = dataTable.table().header().querySelectorAll('th');
+            
+            let thead = document.querySelector('#tambah-data2-table thead');
+            if (!thead) {
+                thead = document.createElement('thead');
+                table.appendChild(thead);
+            }
+            thead.innerHTML = '';
+            const theadTr = document.createElement('tr');
+            theadTr.appendChild(document.createElement('th'));
+            tableHeaders.forEach(header => {
+                if (header.textContent) {
+                    const th = document.createElement('th');
+                    th.textContent = header.textContent;
+                    theadTr.appendChild(th);
+                }
+            });
+            thead.appendChild(theadTr);
+
+            let tbody = document.querySelector('#tambah-data2-table tbody');
+            if (!tbody) {
+                tbody = document.createElement('tbody');
+                table.appendChild(tbody);
+            }
+            tbody.innerHTML = '';
+
+            const rows = dataTable.rows();
+            rows.every(function() {
+                const tbodyTr = document.createElement('tr');
+                tbodyTr.dataset.id = Number(this.node().dataset.id);
+
+                const datas = [...this.data()];
+                datas.pop();
+                datas.unshift('');
+                
+                datas.forEach(data => {
+                    const td = document.createElement('td');
+                    td.innerHTML = data;
+                    tbodyTr.appendChild(td);
+                });
+                tbody.appendChild(tbodyTr);
+            });
+
+            const [[columnIndex, direction]] = dataTable.order();
+            tambahData2Table = new DataTable("#tambah-data2-table", {
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/2.3.4/i18n/id.json",
+                },
+                columnDefs: [
+                    {
+                        orderable: false,
+                        render: DataTable.render.select(),
+                        targets: 0,
+                        width: '40px',
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child',
+                    headerCheckbox: 'select-page',
+                },
+                order: [[columnIndex + 1, direction]],
+            });
+            
+            tambahData2Table.on('select', () => updateConstraintButtons());
+            tambahData2Table.on('deselect', () => updateConstraintButtons());
+            
+            document.getElementById('tambah-data2-table-element').classList.remove('hidden');
+        }
+    }
+
+    function addSelectedBatasan() {
+        let success = false;
+
+        const selectData1 = document.querySelector('select#select-data-1');
+        const selectData1Value = selectData1.value;
+        
+        const selectData2 = document.querySelector('select#select-data-2');
+        const selectData2Value = selectData2.value;
+
+        const data1Table = tambahData1Table;
+        const data2Table = tambahData2Table;
+
+        if (selectData1Value && selectData2Value && data1Table && data2Table) {
+            function getDataDisplay(data, contents) {
+                const dataName = data.split('-').map(word =>
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                ).join(' ');
+
+                let text;
+                if (data == 'hari') {
+                    text = contents[1];
+                } else if (data == 'jam-pembelajaran') {
+                    text = `${contents[1]} - ${contents[2]}` + (contents[4] ? ` (Istirahat)` : '');
+                } else if (data == 'kelas') {
+                    text = contents[1];
+                } else if (data == 'ruang-kelas') {
+                    text = contents[1] + (contents[3] ? ` (Berbagi Kelas)` : '');
+                } else if (data == 'pengajar') {
+                    text = contents[1];
+                } else if (data == 'pelajaran') {
+                    text = contents[1] + ` (${contents[2]} Slot)`;
+                }
+                
+                if (!text) {
+                    return false;
+                }
+                return `<strong class="text-blue-600">${dataName}</strong> | ${text}`;
+            }
+
+            const existingBatasanArrays = Array.from(batasanTable.rows().nodes());
+
+            const selectedData1 = data1Table.rows({ selected: true });
+            const selectedData2 = data2Table.rows({ selected: true });
+            const capable = document.querySelector('input#capable').checked;
+
+            selectedData1.every(function() {
+                const data1 = this;
+                const data1Node = data1.node();
+                const data1Id = Number(data1Node.dataset.id);
+                const data1Content = getDataDisplay(selectData1Value, [...data1.data()]);
+
+                selectedData2.every(function() {
+                    const data2 = this;
+                    const data2Node = data2.node();
+                    const data2Id = Number(data2Node.dataset.id);
+
+                    const existBatasan = existingBatasanArrays.find(row =>
+                        (row.dataset.data1 === selectData1Value && Number(row.dataset.id1) === data1Id && row.dataset.data2 === selectData2Value && Number(row.dataset.id2) === data2Id) ||
+                        (row.dataset.data2 === selectData1Value && Number(row.dataset.id2) === data1Id && row.dataset.data1 === selectData2Value && Number(row.dataset.id1) === data2Id)
+                    );
+                    if (existBatasan && existBatasan.dataset.capable != capable) {
+                        existBatasan.querySelectorAll('td')[2].innerHTML = capable ? checkedIcon() : '';
+                        existBatasan.dataset.capable = capable;
+                    } else if (!existBatasan) {
+                        const data2Content = getDataDisplay(selectData2Value, [...data2.data()]);
+                        if (data1Content && data2Content) {
+                            const batasanData = [
+                                data1Content,
+                                data2Content,
+                                capable ? checkedIcon() : '',
+                                removeIcon(),
+                            ];
+    
+                            const createdRow = batasanTable.row.add(batasanData).draw().node();
+                            createdRow.dataset.data1 = selectData1Value;
+                            createdRow.dataset.id1 = data1Id;
+                            createdRow.dataset.data2 = selectData2Value;
+                            createdRow.dataset.id2 = data2Id;
+                            createdRow.dataset.capable = capable;
+                        }
+                    }
+                });
+            });
+
+            success = true;
+        }
+
+        selectData1.value = '';
+        changeSelectData1(selectData1);
+        selectData2.value = '';
+        changeSelectData2(selectData2);
+        document.querySelector('input#capable').checked = false;
+        if (success) {
+            document.getElementById('success-add-batasan-alert').classList.remove('hidden');
+            document.getElementById('failed-add-batasan-alert').classList.add('hidden');
+
+            document.getElementById('generate-jadwal').classList.add('hidden');
+        } else {
+            document.getElementById('success-add-batasan-alert').classList.add('hidden');
+            document.getElementById('failed-add-batasan-alert').classList.remove('hidden');
+        }
+    }
+
+    async function save() {
+        document.getElementById('system-message-br')?.classList.add('hidden');
+        document.getElementById('system-message-div')?.classList.add('hidden');
+
+        const successAlert = document.getElementById('saved-success-alert');
+        const failedAlert = document.getElementById('saved-failed-alert');
+
+        successAlert.classList.add('hidden');
+        failedAlert.classList.add('hidden');
+
+        const scheduleName = document.getElementById('schedule_name');
+        const scheduleNameValue = scheduleName.value.trim()
+        if (!scheduleNameValue) {
+            scheduleName.value = '';
+            scheduleName.focus();
+            return;
+        }
+
+        const hari = Array.from(dataTableHari.rows().nodes()).map(row => Number(row.dataset.id));
+        const jam_pembelajaran = Array.from(dataTableJam.rows().nodes()).map(row => Number(row.dataset.id));
+        const kelas = Array.from(dataTableKelas.rows().nodes()).map(row => Number(row.dataset.id));
+        const ruang_kelas = Array.from(dataTableRuang.rows().nodes()).map(row => Number(row.dataset.id));
+        const pengajar = Array.from(dataTablePengajar.rows().nodes()).map(row => Number(row.dataset.id));
+        const pelajaran = Array.from(dataTablePelajaran.rows().nodes()).map(row => Number(row.dataset.id));
+
+        const batasan = Array.from(batasanTable.rows().nodes()).map(row => ({
+            data1: row.dataset.data1,
+            id1: Number(row.dataset.id1),
+            data2: row.dataset.data2,
+            id2: Number(row.dataset.id2),
+            capable: row.dataset.capable,
+        }));
+
+        await fetch('/jadwal/save/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+            },
+            body: JSON.stringify({
+                schedule_id: document.querySelector('input[name="schedule_id"]').value,
+                schedule_name: scheduleNameValue,
+                hari: hari,
+                jam_pembelajaran: jam_pembelajaran,
+                kelas: kelas,
+                ruang_kelas: ruang_kelas,
+                pengajar: pengajar,
+                pelajaran: pelajaran,
+                batasan: batasan,
+            }),
+        }).then(response => response.json())
+        .then(data => {
+            const success = data.success;
+            const message = data.message;
+
+            if (success) {
+                successAlert.querySelector('p').innerText = message;
+                successAlert.classList.remove('hidden');
+                failedAlert.classList.add('hidden');
+
+                if (data.schedule_status == 'draft') {
+                    document.getElementById('done-status').classList.add('hidden');
+                    document.getElementById('done-status').classList.remove('inline-flex');
+    
+                    document.getElementById('draft-status').classList.add('inline-flex');
+                    document.getElementById('draft-status').classList.remove('hidden');
+                }
+                document.getElementById('generate-jadwal').classList.remove('hidden');
+            } else {
+                failedAlert.querySelector('p').innerText = message;
+                failedAlert.classList.remove('hidden');
+                successAlert.classList.add('hidden');
+            }
+        });
+
+    }
+</script>
+{% endblock %}
