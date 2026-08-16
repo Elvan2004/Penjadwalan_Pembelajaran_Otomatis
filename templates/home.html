@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}
+Welcome to Penjadwalan App!
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<nav class="bg-white border-default border-b border-gray-950/5 sticky top-0 right-0 left-0">
+    <div class="flex flex-wrap justify-between mx-auto max-w-screen px-4 py-3">
+        <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+            <img src="{% static "images/logo.png" %}" class="h-12" alt="Logo" />
+        </a>
+        <div id="mega-menu-full" class="justify-between items-center flex w-auto order-1">
+            <ul class="flex font-medium text-xl flex-row mt-0 space-x-8 rtl:space-x-reverse">
+                <li>
+                    <a href="/login" class="block text-heading text-blue-950 hover:bg-transparent border-0 hover:text-blue-700 p-0">Login</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section>
+    <div class="flex justify-between items-center px-12 py-10">
+        <div class="w-3/10">
+            <h1 class="text-5xl font-bold text-blue-600">ScHeD</h1>
+            <p class="my-2 text-lg text-blue-950">Di era modern sekarang, proses penjadwalan juga bisa dibantu teknologi yang mampu merancang jadwal yang kompleks dengan lebih cepat dan minim kesalahan.</p>
+            <a href="/daftar" class="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-semibold rounded-lg text-xl px-4 py-3 text-center leading-5 inline-block">Daftar & Coba</a>
+        </div>
+        <div class="flex justify-evenly items-center w-7/10 ml-10">
+            <img src="{% static "images/headline_image_1.png" %}" class="w-45/100 h-fit" alt="Image" />
+            <img src="{% static "images/headline_image_2.png" %}" class="w-40/100 h-fit" alt="Image" />
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="px-12 py-10">
+        <h1 class="text-center font-extrabold text-blue-600 text-6xl mb-8">FiTuR</h1>
+        <div class="grid grid-cols-3 gap-x-4">
+            <div class="bg-neutral-primary-soft block w-auto">
+                <img class="w-1/2 m-auto" src="{% static "images/feature_image_1.png" %}" alt="Feature" />
+                <div class="pt-6 py-3 text-center">
+                    <h5 class="mt-3 text-2xl font-semibold tracking-tight text-heading text-blue-950">Perancangan Otomatis</h5>
+                </div>
+            </div>
+            <div class="bg-neutral-primary-soft block w-auto">
+                <img class="w-1/2 m-auto" src="{% static "images/feature_image_2.png" %}" alt="Feature" />
+                <div class="pt-6 py-3 text-center">
+                    <h5 class="mt-3 text-2xl font-semibold tracking-tight text-heading text-blue-950">Export Jadwal</h5>
+                </div>
+            </div>
+            <div class="bg-neutral-primary-soft block w-auto">
+                <img class="w-1/2 m-auto" src="{% static "images/feature_image_3.png" %}" alt="Feature" />
+                <div class="pt-6 py-3 text-center">
+                    <h5 class="mt-3 text-2xl font-semibold tracking-tight text-heading text-blue-950">Penentuan Batasan</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="p-12 pt-16">
+        <h1 class="font-extrabold text-blue-600 text-5xl mb-3 ml-6">Keunggulan</h1>
+        <div class="flex">
+            <img src="{% static "images/strength_image_1.avif" %}" class="w-2/5" alt="Image" />
+            <div class="ml-16 mt-6 w-1/2">
+                <ul class="text-blue-950 space-y-6 divide-y-2">
+                    <li class="text-2xl m-0 py-5">Data tersimpan, dapat dikelola, dan digunakan kembali</li>
+                    <li class="text-2xl m-0 py-5">Cepat dan hemat waktu</li>
+                    <li class="text-2xl m-0 py-5">Jadwal minim bentrok karena dilakukan pengecekan oleh sistem</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-neutral-primary-soft mb-8">
+    <div class="w-full px-8">
+        <hr class="my-6 border-default sm:mx-auto lg:my-8" />
+        <span class="block text-lg text-body text-center text-blue-950"><span class="text-blue-600 font-bold">ScHeD</span> - All Rights Reserved.</span>
+    </div>
+</footer>
+{% endblock %}

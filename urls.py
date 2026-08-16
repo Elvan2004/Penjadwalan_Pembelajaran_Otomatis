@@ -1,24 +1,39 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
-from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path("", include("blog.urls")),
-    path("admin/", admin.site.urls),
+    path("", views.home, name="Home"),
+    path("login/", views.log_in, name="Login"),
+    path("accounts/login/", views.log_in, name="Login"),
+    path("logout/", views.log_out, name="Logout"),
+
+    path("daftar/", views.daftar, name="Daftar"),
+
+    path("dasbor/", views.dasbor, name="Dasbor"),
+    path("profil/", views.profil, name="Profil"),
+
+    path("hari/", views.hari, name="Hari"),
+    path("jam-pembelajaran/", views.jam_pembelajaran, name="Jam Pembelajaran"),
+    path("kelas/", views.kelas, name="Kelas"),
+    path("ruang-kelas/", views.ruang_kelas, name="Ruang Kelas"),
+    path("pengajar/", views.pengajar, name="Pengajar"),
+    path("pelajaran/", views.pelajaran, name="Pelajaran"),
+
+    path("data/add/<str:data>/", views.data_add, name="Data Add"),
+    path("data/get/<str:data>/<int:id>/", views.data_get, name="Data Get"),
+    path("data/update/<str:data>/", views.data_update, name="Data Update"),
+    path("data/remove/<str:data>/", views.data_remove, name="Data Remove"),
+
+    path("jadwal/", views.jadwal, name="Jadwal"),
+    path("jadwal/add/", views.jadwal_add, name="Jadwal Add"),
+
+    path("jadwal/detail/<int:id>/", views.jadwal_detail, name="Jadwal"),
+    path("jadwal/get/<str:data>/", views.jadwal_get_data, name="Jadwal Get Data"),
+
+    path("jadwal/save/", views.jadwal_save, name="Jadwal Save"),
+    path("jadwal/cancel/<int:id>/", views.jadwal_cancel, name="Jadwal Cancel"),
+    path("jadwal/delete/<int:id>/", views.jadwal_delete, name="Jadwal Delete"),
+
+    path("jadwal/generate/<int:id>/", views.jadwal_generate, name="Jadwal Generate"),
+    path("jadwal/view/<int:id>/", views.jadwal_view, name="Jadwal"),
 ]
