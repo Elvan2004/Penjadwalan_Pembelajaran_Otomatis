@@ -25,7 +25,7 @@ Buat Jadwal
             <button data-modal-target="data-modal" data-modal-toggle="data-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" onclick="clickModalData()">Tambah Data</button>
             <button data-modal-target="constraint-modal" data-modal-toggle="constraint-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" onclick="clickModalBatasan()">Tambah Batasan</button>
         </div>
-        <a href="/jadwal/generate/{{ schedule_id }}" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer {% if hide_initial_generate_button %} hidden {% endif %}" id="generate-jadwal">Buat Jadwal</a>
+        <a href="/jadwal/generate/{{ schedule_id }}" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer {% if hide_initial_generate_button %} hidden {% endif %}" id="generate-jadwal" onclick="clickGenerateJadwal()">Buat Jadwal</a>
     </div>
     <div class="flex justify-between items-start mt-3">
         <div class="flex space-x-2">
@@ -72,7 +72,7 @@ Buat Jadwal
     <div class="grid grid-cols-5">
         <label for="schedule_name" class="block text-md font-medium text-blue-900 my-auto">Nama Jadwal</label>
         <div class="col-span-4">
-            <input id="schedule_name" type="text" name="schedule_name" autofocus required value="{{ schedule_name }}" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" oninput="inputScheduleName()"/>
+            <input id="schedule_name" type="text" name="schedule_name" placeholder="Kelas 1 - 2" autofocus required value="{{ schedule_name }}" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" oninput="inputScheduleName()"/>
         </div>
     </div>
     <br/><br/>
@@ -142,7 +142,7 @@ Buat Jadwal
                 <p>Gagal menambahkan data <span id="failed-add-data-alert-span"></span>.</p>
             </div>
             <div class="flex gap-x-2 mt-4">
-                <select id="select-data" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData(this)">
+                <select id="select-data" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-gray-400" onchange="changeSelectData(this)">
                     <option value="" selected>Pilih Data</option>
                     <option value="hari">Hari</option>
                     <option value="jam-pembelajaran">Jam</option>
@@ -189,7 +189,7 @@ Buat Jadwal
             </div>
             <br/>
             <label for="select-data-1" class="block mb-2.5 text-lg font-medium text-heading">Data 1</label>
-            <select id="select-data-1" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData1(this)">
+            <select id="select-data-1" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-gray-400" onchange="changeSelectData1(this)">
                 <option value="" selected>Pilih Data</option>
                 <option value="hari">Hari</option>
                 <option value="jam-pembelajaran">Jam</option>
@@ -209,7 +209,7 @@ Buat Jadwal
             </div>
             <hr class="my-5 border-gray-300"/>
             <label for="select-data-2" class="block mb-2.5 text-lg font-medium text-heading">Data 2</label>
-            <select id="select-data-2" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-body" onchange="changeSelectData2(this)">
+            <select id="select-data-2" class="block w-full px-3 py-2.5 bg-gray-100 border border-gray-300 text-heading text-sm rounded-xl shadow-xs placeholder:text-gray-400" onchange="changeSelectData2(this)">
                 <option value="" selected>Pilih Data</option>
                 <option value="hari">Hari</option>
                 <option value="jam-pembelajaran">Jam</option>
@@ -231,7 +231,7 @@ Buat Jadwal
                 <hr class="my-5 border-gray-300"/>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center">
-                        <input id="capable" type="checkbox" class="w-5 h-5 border border-default-medium rounded-sm bg-neutral-secondary-medium checked:text-blue-600">
+                        <input id="capable" type="checkbox" class="w-5 h-5 border border-default-medium rounded-sm bg-neutral-secondary-medium checked:text-blue-600 disabled:opacity-50">
                         <label for="capable" class="ms-2 text-md font-medium text-heading text-blue-900 select-none">Bersedia</label>
                     </div>
                     <button class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" id="tambah-selected-batasan" onclick="addSelectedBatasan()">Tambah</button>
@@ -257,6 +257,7 @@ Buat Jadwal
             </div>
             <!-- Modal body -->
             <div>
+                <br/>
                 <table id="data-table-hari" data-name="hari" class="display">
                     <thead>
                         <tr>
@@ -298,6 +299,7 @@ Buat Jadwal
             </div>
             <!-- Modal body -->
             <div>
+                <br/>
                 <table id="data-table-jam" data-name="jam_pembelajaran" class="display">
                     <thead>
                         <tr>
@@ -311,8 +313,8 @@ Buat Jadwal
                     <tbody>
                         {% for data in jam_pembelajaran %}
                             <tr data-id="{{ data.id }}">
-                                <td>{{ data.start_time|time:"H:i:s" }}</td>
-                                <td>{{ data.finish_time|time:"H:i:s" }}</td>
+                                <td>{{ data.start_time|time:"H:i" }}</td>
+                                <td>{{ data.finish_time|time:"H:i" }}</td>
                                 <td>{{ data.sequence }}</td>
                                 <td>
                                     {% if data.is_break %}
@@ -349,6 +351,7 @@ Buat Jadwal
             </div>
             <!-- Modal body -->
             <div>
+                <br/>
                 <table id="data-table-kelas" data-name="kelas" class="display">
                     <thead>
                         <tr>
@@ -390,6 +393,7 @@ Buat Jadwal
             </div>
             <!-- Modal body -->
             <div>
+                <br/>
                 <table id="data-table-ruang" data-name="ruang_kelas" class="display">
                     <thead>
                         <tr>
@@ -439,6 +443,7 @@ Buat Jadwal
             </div>
             <!-- Modal body -->
             <div>
+                <br/>
                 <table id="data-table-pengajar" data-name="pengajar" class="display">
                     <thead>
                         <tr>
@@ -478,6 +483,7 @@ Buat Jadwal
             </div>
             <!-- Modal body -->
             <div>
+                <br/>
                 <table id="data-table-pelajaran" data-name="pelajaran" class="display">
                     <thead>
                         <tr>
@@ -564,6 +570,17 @@ Buat Jadwal
         </div>
     </div>
 </div>
+
+<!-- Loader -->
+<div class="fixed h-screen bg-white/50 top-0 left-0 right-0 z-100 hidden justify-center items-center" id="loader">
+    <div role="status">
+        <svg aria-hidden="true" class="inline w-10 h-10 w-8 h-8 text-gray-200 animate-spin fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+        </svg>
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
 {% endblock %}
 
 {% block additional_js %}
@@ -599,9 +616,8 @@ Buat Jadwal
                     width: '40px',
                 }
             ],
-            paging: false,
-            filter: false,
             order: [[1, 'asc']],
+            stateSave: true,
         });
         dataTableJam = new DataTable("#data-table-jam", {
             language: {
@@ -614,9 +630,8 @@ Buat Jadwal
                     width: '40px',
                 }
             ],
-            paging: false,
-            filter: false,
             order: [[2, 'asc']],
+            stateSave: true,
         });
         dataTableKelas = new DataTable("#data-table-kelas", {
             language: {
@@ -629,9 +644,8 @@ Buat Jadwal
                     width: '40px',
                 }
             ],
-            paging: false,
-            filter: false,
             order: [[1, 'asc']],
+            stateSave: true,
         });
         dataTableRuang = new DataTable("#data-table-ruang", {
             language: {
@@ -644,9 +658,8 @@ Buat Jadwal
                     width: '40px',
                 }
             ],
-            paging: false,
-            filter: false,
             order: [[0, 'asc']],
+            stateSave: true,
         });
         dataTablePengajar = new DataTable("#data-table-pengajar", {
             language: {
@@ -659,9 +672,8 @@ Buat Jadwal
                     width: '40px',
                 }
             ],
-            paging: false,
-            filter: false,
             order: [[0, 'asc']],
+            stateSave: true,
         });
         dataTablePelajaran = new DataTable("#data-table-pelajaran", {
             language: {
@@ -674,9 +686,8 @@ Buat Jadwal
                     width: '40px',
                 }
             ],
-            paging: false,
-            filter: false,
             order: [[0, 'asc']],
+            stateSave: true,
         });
 
         batasanTable = new DataTable("#batasan-table", {
@@ -691,6 +702,7 @@ Buat Jadwal
                 }
             ],
             order: [[0, 'asc'], [1, 'asc']],
+            stateSave: true,
         });
     });
 
@@ -816,6 +828,8 @@ Buat Jadwal
                         if (Boolean(data[name])) {
                             td.innerHTML = checkedIcon();
                         }
+                    } else if (val.type == 'time') {
+                        td.textContent = data[name].slice(0, -3);
                     } else {
                         td.textContent = data[name];
                     }
@@ -842,6 +856,7 @@ Buat Jadwal
                     headerCheckbox: 'select-page',
                 },
                 order: order,
+                stateSave: true,
             });
 
             tambahDataTable.on('select', () => updateDataButtons(tambahDataTable));
@@ -860,7 +875,7 @@ Buat Jadwal
             pengajar: dataTablePengajar,
             pelajaran: dataTablePelajaran,
             batasan: batasanTable,
-        }
+        };
         return dataTable[name];
     }
     
@@ -870,6 +885,10 @@ Buat Jadwal
 
         const table = getCurrentTable(currentSelectedData.replace('-', '_'));
         if (table) {
+            const currentPageLen = table.page.len();
+            const tableSearch = table.search();
+            table.page.len(-1).search('').draw();
+
             const existingDataArrays = Array.from(table.rows().nodes());
 
             const selectedTableData = tambahDataTable.rows({ selected: true });
@@ -888,6 +907,7 @@ Buat Jadwal
                 }
             });
 
+            table.page.len(currentPageLen).search(tableSearch).draw();
             success = true;
         }
 
@@ -938,6 +958,10 @@ Buat Jadwal
         if (tableName != 'batasan') {
             const id = Number(row.dataset.id);
 
+            const currentPageLen = batasanTable.page.len();
+            const tableSearch = batasanTable.search();
+            batasanTable.page.len(-1).search('').draw();
+
             const existingBatasanArrays = Array.from(batasanTable.rows().nodes());
             const batasanToDelete = existingBatasanArrays.filter(batasan =>
                 (batasan.dataset.data1 === tableName.replace('_', '-') && Number(batasan.dataset.id1) === id) ||
@@ -949,18 +973,22 @@ Buat Jadwal
                 if (!confirmedDelete) {
                     return;
                 }
-                batasanTable.rows(batasanToDelete).remove().draw();
+                batasanTable.rows(batasanToDelete).remove().draw(false);
             }
+            batasanTable.page.len(currentPageLen).search(tableSearch).draw();
         }
 
-        table.row(row).remove().draw();
+        table.row(row).remove().draw(false);
         document.getElementById('generate-jadwal').classList.add('hidden');
     }
 
     function updateConstraintButtons() {
         const data1Count = tambahData1Table ? tambahData1Table.rows({ selected: true }).count() : 0;
         const data2Count = tambahData2Table ? tambahData2Table.rows({ selected: true }).count() : 0;
-        
+
+        const select1 = document.querySelector('select#select-data-1');
+        const select2 = document.querySelector('select#select-data-2');
+
         const element = document.getElementById("constraint-button");
 
         if (data1Count > 0 && data2Count > 0) {
@@ -984,7 +1012,7 @@ Buat Jadwal
             option.disabled = false;
         });
         
-        const selectedValue = select.value
+        const selectedValue = select.value;
         if (selectedValue) {
             otherSelect.querySelector(`option[value=${selectedValue}]`).disabled = true;
 
@@ -1034,6 +1062,10 @@ Buat Jadwal
             }
             tbody.innerHTML = '';
 
+            const currentPageLen = dataTable.page.len();
+            const tableSearch = dataTable.search();
+            dataTable.page.len(-1).search('').draw();
+
             const rows = dataTable.rows();
             rows.every(function() {
                 const tbodyTr = document.createElement('tr');
@@ -1050,6 +1082,7 @@ Buat Jadwal
                 });
                 tbody.appendChild(tbodyTr);
             });
+            dataTable.page.len(currentPageLen).search(tableSearch).draw();
 
             const [[columnIndex, direction]] = dataTable.order();
             tambahData1Table = new DataTable("#tambah-data1-table", {
@@ -1070,6 +1103,7 @@ Buat Jadwal
                     headerCheckbox: 'select-page',
                 },
                 order: [[columnIndex + 1, direction]],
+                stateSave: true,
             });
             
             tambahData1Table.on('select', () => updateConstraintButtons());
@@ -1093,7 +1127,7 @@ Buat Jadwal
             option.disabled = false;
         });
         
-        const selectedValue = select.value
+        const selectedValue = select.value;
         if (selectedValue) {
             otherSelect.querySelector(`option[value=${selectedValue}]`).disabled = true;
 
@@ -1143,6 +1177,10 @@ Buat Jadwal
             }
             tbody.innerHTML = '';
 
+            const currentPageLen = dataTable.page.len();
+            const tableSearch = dataTable.search();
+            dataTable.page.len(-1).search('').draw();
+
             const rows = dataTable.rows();
             rows.every(function() {
                 const tbodyTr = document.createElement('tr');
@@ -1159,6 +1197,7 @@ Buat Jadwal
                 });
                 tbody.appendChild(tbodyTr);
             });
+            dataTable.page.len(currentPageLen).search(tableSearch).draw();
 
             const [[columnIndex, direction]] = dataTable.order();
             tambahData2Table = new DataTable("#tambah-data2-table", {
@@ -1179,6 +1218,7 @@ Buat Jadwal
                     headerCheckbox: 'select-page',
                 },
                 order: [[columnIndex + 1, direction]],
+                stateSave: true,
             });
             
             tambahData2Table.on('select', () => updateConstraintButtons());
@@ -1227,6 +1267,10 @@ Buat Jadwal
                 return `<strong class="text-blue-600">${dataName}</strong> | ${text}`;
             }
 
+            const currentPageLen = batasanTable.page.len();
+            const tableSearch = batasanTable.search();
+            batasanTable.page.len(-1).search('').draw();
+
             const existingBatasanArrays = Array.from(batasanTable.rows().nodes());
 
             const selectedData1 = data1Table.rows({ selected: true });
@@ -1272,6 +1316,7 @@ Buat Jadwal
                 });
             });
 
+            batasanTable.page.len(currentPageLen).search(tableSearch).draw();
             success = true;
         }
 
@@ -1309,13 +1354,45 @@ Buat Jadwal
             return;
         }
 
+        const dataTableHariPageLen = dataTableHari.page.len();
+        const tableHariSearch = dataTableHari.search();
+        dataTableHari.page.len(-1).search('').draw();
         const hari = Array.from(dataTableHari.rows().nodes()).map(row => Number(row.dataset.id));
-        const jam_pembelajaran = Array.from(dataTableJam.rows().nodes()).map(row => Number(row.dataset.id));
-        const kelas = Array.from(dataTableKelas.rows().nodes()).map(row => Number(row.dataset.id));
-        const ruang_kelas = Array.from(dataTableRuang.rows().nodes()).map(row => Number(row.dataset.id));
-        const pengajar = Array.from(dataTablePengajar.rows().nodes()).map(row => Number(row.dataset.id));
-        const pelajaran = Array.from(dataTablePelajaran.rows().nodes()).map(row => Number(row.dataset.id));
+        dataTableHari.page.len(dataTableHariPageLen).search(tableHariSearch).draw();
 
+        const dataTableJamPageLen = dataTableJam.page.len();
+        const tableJamSearch = dataTableJam.search();
+        dataTableJam.page.len(-1).search('').draw();
+        const jam_pembelajaran = Array.from(dataTableJam.rows().nodes()).map(row => Number(row.dataset.id));
+        dataTableJam.page.len(dataTableJamPageLen).search(tableJamSearch).draw();
+
+        const dataTableKelasPageLen = dataTableKelas.page.len();
+        const tableKelasSearch = dataTableKelas.search();
+        dataTableKelas.page.len(-1).search('').draw();
+        const kelas = Array.from(dataTableKelas.rows().nodes()).map(row => Number(row.dataset.id));
+        dataTableKelas.page.len(dataTableKelasPageLen).search(tableKelasSearch).draw();
+
+        const dataTableRuangPageLen = dataTableRuang.page.len();
+        const tableRuangSearch = dataTableRuang.search();
+        dataTableRuang.page.len(-1).search('').draw();
+        const ruang_kelas = Array.from(dataTableRuang.rows().nodes()).map(row => Number(row.dataset.id));
+        dataTableRuang.page.len(dataTableRuangPageLen).search(tableRuangSearch).draw();
+
+        const dataTablePengajarPageLen = dataTablePengajar.page.len();
+        const tablePengajarSearch = dataTablePengajar.search();
+        dataTablePengajar.page.len(-1).search('').draw();
+        const pengajar = Array.from(dataTablePengajar.rows().nodes()).map(row => Number(row.dataset.id));
+        dataTablePengajar.page.len(dataTablePengajarPageLen).search(tablePengajarSearch).draw();
+
+        const dataTablePelajaranPageLen = dataTablePelajaran.page.len();
+        const tablePelajaranSearch = dataTablePelajaran.search();
+        dataTablePelajaran.page.len(-1).search('').draw();
+        const pelajaran = Array.from(dataTablePelajaran.rows().nodes()).map(row => Number(row.dataset.id));
+        dataTablePelajaran.page.len(dataTablePelajaranPageLen).search(tablePelajaranSearch).draw();
+
+        const batasanTablePageLen = batasanTable.page.len();
+        const batasanTableSearch = batasanTable.search();
+        batasanTable.page.len(-1).search('').draw();
         const batasan = Array.from(batasanTable.rows().nodes()).map(row => ({
             data1: row.dataset.data1,
             id1: Number(row.dataset.id1),
@@ -1323,6 +1400,7 @@ Buat Jadwal
             id2: Number(row.dataset.id2),
             capable: row.dataset.capable,
         }));
+        batasanTable.page.len(batasanTablePageLen).search(batasanTableSearch).draw();
 
         await fetch('/jadwal/save/', {
             method: 'POST',
@@ -1366,6 +1444,12 @@ Buat Jadwal
             }
         });
 
+    }
+
+    function clickGenerateJadwal() {
+        const loader = document.getElementById('loader');
+        loader.classList.add('flex');
+        loader.classList.remove('hidden');
     }
 </script>
 {% endblock %}

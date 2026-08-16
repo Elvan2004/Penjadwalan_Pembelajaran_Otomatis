@@ -8,6 +8,12 @@
 Data Jadwal
 {% endblock %}
 
+{% block css %}
+tbody tr:hover {
+    background-color: #DBEAFE;
+}
+{% endblock %}
+
 {% block content %}
 {% include "sidebar.html" %}
 
@@ -51,12 +57,11 @@ Data Jadwal
                 <th></th>
                 <th>Nama</th>
                 <th>Status</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
             {% for data in datas %}
-                <tr data-id="{{ data.id }}" class="{% if data.status != 'done' %} text-red-600 {% endif %}">
+                <tr data-id="{{ data.id }}" class="cursor-pointer {% if data.status != 'done' %} text-red-600 {% endif %}">
                     <td></td>
                     <td>{{ data.name }}</td>
                     <td>
@@ -65,13 +70,6 @@ Data Jadwal
                         {% else %}
                             Draf
                         {% endif %}
-                    </td>
-                    <td>
-                        <a href="/jadwal/view/{{ data.id }}/">
-                            <svg class="w-4 h-4 dark:text-white hover:text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"/>
-                            </svg>
-                        </a>
                     </td>
                 </tr>
             {% endfor %}
@@ -103,6 +101,14 @@ Data Jadwal
         }
     }
 
+    function checkAndView(e) {
+        if (e.target.closest('td:first-child')) {
+            return;
+        }
+
+        window.location.href = `/jadwal/view/${this.dataset.id}`;
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         table = new DataTable("#data-table", {
             language: {
@@ -114,11 +120,6 @@ Data Jadwal
                     render: DataTable.render.select(),
                     targets: 0,
                     width: '40px',
-                },
-                {
-                    orderable: false,
-                    targets: 3,
-                    width: '40px',
                 }
             ],
             select: {
@@ -127,10 +128,12 @@ Data Jadwal
                 headerCheckbox: 'select-page',
             },
             order: [[2, 'asc'], [1, 'asc']],
+            stateSave: true,
         });
 
         table.on('select', updateButtons);
         table.on('deselect', updateButtons);
+        table.on('click', 'tbody tr', checkAndView);
     });
 
     function loadRemoveModal() {

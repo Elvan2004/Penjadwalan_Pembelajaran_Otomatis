@@ -37,22 +37,37 @@ Daftar
                 </div>
             {% endif %}
             <div>
+                <label for="name" class="block text-sm/6 font-medium text-blue-900">Nama Anda</label>
+                <div class="mt-2">
+                    <input id="name" type="text" name="name" placeholder="John Doe" required autofocus class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
+                </div>
+            </div>
+
+            <div>
+                <label for="institute_name" class="block text-sm/6 font-medium text-blue-900">Nama Institusi</label>
+                <div class="mt-2">
+                    <input id="institute_name" type="text" name="institute_name" placeholder="Universitas ScHeD" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
+                </div>
+            </div>
+            <hr class="justify-self-center w-[120%] my-10"/>
+
+            <div>
                 <label for="username" class="block text-sm/6 font-medium text-blue-900">Username</label>
                 <div class="mt-2">
-                    <input id="username" type="text" name="username" required autofocus class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
+                    <input id="username" type="text" name="username" placeholder="johndoe" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
                 </div>
             </div>
 
             <div>
                 <label for="password" class="block text-sm/6 font-medium text-blue-900">Password</label>
                 <div class="mt-2 flex justify-between items-center">
-                    <input id="password" type="password" name="password" required autocomplete="current-password" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
-                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPassword(true)" id="show-password">
+                    <input id="password" type="password" name="password" placeholder="••••••••" required autocomplete="current-password" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
+                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPassword(true)" id="hide-password">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                    </svg>
+                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800 hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPassword(false)" id="show-password">
                         <path stroke="currentColor" stroke-width="1.5" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
                         <path stroke="currentColor" stroke-width="1.5" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                    </svg>
-                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800 hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPassword(false)" id="hide-password">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                     </svg>
                 </div>
             </div>
@@ -60,13 +75,13 @@ Daftar
             <div>
                 <label for="password_confirm" class="block text-sm/6 font-medium text-blue-900">Konfirmasi Password</label>
                 <div class="mt-2 flex justify-between items-center">
-                    <input id="password_confirm" type="password" name="password_confirm" required autocomplete="current-password" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
-                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPasswordConfirm(true)" id="show-password-confirm">
+                    <input id="password_confirm" type="password" name="password_confirm" placeholder="••••••••" required autocomplete="current-password" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-100 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600 sm:text-sm/6" />
+                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPasswordConfirm(true)" id="hide-password-confirm">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                    </svg>
+                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800 hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPasswordConfirm(false)" id="show-password-confirm">
                         <path stroke="currentColor" stroke-width="1.5" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
                         <path stroke="currentColor" stroke-width="1.5" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                    </svg>
-                    <svg class="w-8 h-8 text-gray-800 dark:text-white mx-1 cursor-pointer hover:text-blue-800 hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" onclick="showPasswordConfirm(false)" id="hide-password-confirm">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                     </svg>
                 </div>
             </div>
@@ -88,11 +103,11 @@ Daftar
         let hideIcon = document.getElementById("hide-password");
 
         if (active) {
-            showIcon.classList.add("hidden");
-            hideIcon.classList.remove("hidden");
-        } else {
             showIcon.classList.remove("hidden");
             hideIcon.classList.add("hidden");
+        } else {
+            hideIcon.classList.remove("hidden");
+            showIcon.classList.add("hidden");
         }
 
         let password = document.getElementById("password");
@@ -104,11 +119,11 @@ Daftar
         let hideIcon = document.getElementById("hide-password-confirm");
 
         if (active) {
-            showIcon.classList.add("hidden");
-            hideIcon.classList.remove("hidden");
-        } else {
             showIcon.classList.remove("hidden");
             hideIcon.classList.add("hidden");
+        } else {
+            hideIcon.classList.remove("hidden");
+            showIcon.classList.add("hidden");
         }
 
         let password = document.getElementById("password_confirm");

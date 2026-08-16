@@ -1,4 +1,9 @@
+import hashlib
 import json
+import math
+
+from collections import defaultdict
+from ortools.sat.python import cp_model
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -45,6 +50,13 @@ def log_out(request):
 
 def daftar(request):
     if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        institute_name = request.POST.get('institute_name', '').strip()
+
+        if not name or not institute_name:
+            messages.error(request, 'Semua data wajib diisi.')
+            return render(request, 'daftar.html')
+
         username = request.POST.get('username', '').strip()
         if not username:
             messages.error(request, 'Username wajib diisi.')
@@ -82,48 +94,20 @@ def daftar(request):
                     messages.error(request, message)
                 return render(request, 'daftar.html')
         
-        request.session['register_data'] = {
-            'username': username,
-            'password': password,
-        }
-        return redirect('/data-pengguna/')
-    
-    return render(request, 'daftar.html')
-
-def data_pengguna(request):
-    temp = request.session.get('register_data')
-    if not temp:
-        return redirect('/daftar/')
-    
-    if request.method == 'POST':
-        username=temp['username']
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username sudah diambil duluan.')
-            del request.session['register_data']
-            return redirect('/daftar/')
-        
-        name = request.POST.get('name', '').strip()
-        institute_name = request.POST.get('institute_name', '').strip()
-
-        if not name or not institute_name:
-            messages.error(request, 'Semua data wajib diisi.')
-            return render(request, 'data_pengguna.html')
-        
         user = User.objects.create_user(
             username=username,
-            password=temp['password'],
+            password=password,
             first_name=name,
         )
         models.Profile.objects.create(
             user=user,
             institute_name=institute_name,
         )
-        
-        del request.session['register_data']
+
         login(request, user)
         return redirect('/dasbor/')
-
-    return render(request, 'data_pengguna.html')
+    
+    return render(request, 'daftar.html')
 
 @login_required
 def dasbor(request):
@@ -193,36 +177,36 @@ def profil(request):
 def get_table_columns(data, remove_keys=[]):
     data_columns = {
         'hari': {
-            'name': {'label': 'Nama', 'type': 'text'},
-            'sequence': {'label': 'Urutan', 'type': 'number'},
-            'active': {'label': 'Aktif', 'type': 'checkbox'},
+            'name': {'label': 'Nama', 'type': 'text', 'placeholder': 'Senin'},
+            'sequence': {'label': 'Urutan', 'type': 'number', 'placeholder': '1'},
+            'active': {'label': 'Aktif', 'type': 'checkbox', 'default_value': True},
         },
         'jam-pembelajaran': {
             'start_time': {'label': 'Mulai', 'type': 'time'},
             'finish_time': {'label': 'Selesai', 'type': 'time'},
-            'sequence': {'label': 'Urutan', 'type': 'number'},
-            'is_break': {'label': 'Istirahat', 'type': 'checkbox'},
-            'active': {'label': 'Aktif', 'type': 'checkbox'},
+            'sequence': {'label': 'Urutan', 'type': 'number', 'placeholder': '1'},
+            'is_break': {'label': 'Istirahat', 'type': 'checkbox', 'default_value': False},
+            'active': {'label': 'Aktif', 'type': 'checkbox', 'default_value': True},
         },
         'kelas': {
-            'name': {'label': 'Nama', 'type': 'text'},
-            'sequence': {'label': 'Urutan', 'type': 'number'},
-            'active': {'label': 'Aktif', 'type': 'checkbox'},
+            'name': {'label': 'Nama', 'type': 'text', 'placeholder': '1A'},
+            'sequence': {'label': 'Urutan', 'type': 'number', 'placeholder': '1'},
+            'active': {'label': 'Aktif', 'type': 'checkbox', 'default_value': True},
         },
         'ruang-kelas': {
-            'name': {'label': 'Nama', 'type': 'text'},
-            'class_capacity': {'label': 'Kapasitas Kelas', 'type': 'number'},
-            'is_same_time_shareable': {'label': 'Berbagi Kelas', 'type': 'checkbox'},
-            'active': {'label': 'Aktif', 'type': 'checkbox'},
+            'name': {'label': 'Nama', 'type': 'text', 'placeholder': 'R101'},
+            'class_capacity': {'label': 'Kapasitas Kelas', 'type': 'number', 'placeholder': '1', 'min': 0},
+            'is_same_time_shareable': {'label': 'Berbagi Kelas', 'type': 'checkbox', 'default_value': False},
+            'active': {'label': 'Aktif', 'type': 'checkbox', 'default_value': True},
         },
         'pengajar': {
-            'name': {'label': 'Nama', 'type': 'text'},
-            'active': {'label': 'Aktif', 'type': 'checkbox'},
+            'name': {'label': 'Nama', 'type': 'text', 'placeholder': 'John Doe'},
+            'active': {'label': 'Aktif', 'type': 'checkbox', 'default_value': True},
         },
         'pelajaran': {
-            'name': {'label': 'Nama', 'type': 'text'},
-            'time_slot': {'label': 'Slot Waktu', 'type': 'number'},
-            'active': {'label': 'Aktif', 'type': 'checkbox'},
+            'name': {'label': 'Nama', 'type': 'text', 'placeholder': 'Agama'},
+            'time_slot': {'label': 'Slot Waktu', 'type': 'number', 'placeholder': '1', 'min': 0},
+            'active': {'label': 'Aktif', 'type': 'checkbox', 'default_value': True},
         },
     }
 
@@ -356,6 +340,9 @@ def data_add(request, data):
         value = request.POST.get(column, False)
         if field.get_internal_type() == 'BooleanField' and value:
             value = value.lower() in ['true', '1', 'on']
+        if field.get_internal_type() == 'PositiveIntegerField' and int(value) < 0:
+            messages.warning(request, f'{field.verbose_name} tidak bisa bernilai negatif.')
+            return redirect(f'/{data}/')
         values[column] = value
     
     values['user'] = request.user
@@ -405,6 +392,9 @@ def data_update(request, data):
         value = request.POST.get(column, False)
         if field.get_internal_type() == 'BooleanField' and value:
             value = value.lower() in ['true', '1', 'on']
+        if field.get_internal_type() == 'PositiveIntegerField' and int(value) < 0:
+            messages.warning(request, f'{field.verbose_name} tidak bisa bernilai negatif.')
+            return redirect(f'/{data}/')
         setattr(record, column, value)
     
     record.save()
@@ -427,11 +417,8 @@ def data_remove(request, data):
         entity = data.replace('-', '_')
         data_obj = models.Data.objects.filter(entity=entity)
         for id in ids:
-            try:
-                data_obj.get(entity_id=int(id))
-            except models.Data.DoesNotExist:
-                continue
-            to_exclude_ids.append(int(id))
+            if data_obj.filter(entity_id=int(id)).exists():
+                to_exclude_ids.append(int(id))
 
     deleted_count, _ = objects.filter(user=request.user, id__in=ids).exclude(id__in=to_exclude_ids).delete()
     
@@ -477,7 +464,7 @@ def jadwal_detail(request, id):
         if entity == 'hari':
             return f'<strong class="text-blue-600">Hari</strong> | {data.name}'
         elif entity == 'jam-pembelajaran':
-            return f'<strong class="text-blue-600">Jam Pembelajaran</strong> | {data.start_time} - {data.finish_time}' + (' (Istirahat)' if data.is_break else '')
+            return f'<strong class="text-blue-600">Jam Pembelajaran</strong> | {data.start_time.strftime("%H:%M")} - {data.finish_time.strftime("%H:%M")}' + (' (Istirahat)' if data.is_break else '')
         elif entity == 'kelas':
             return f'<strong class="text-blue-600">Kelas</strong> | {data.name}'
         elif entity == 'ruang-kelas':
@@ -711,26 +698,401 @@ def jadwal_generate(request, id):
     except models.Schedule.DoesNotExist:
         messages.error(request, 'Gagal menemukan jadwal, silakan coba lagi.')
         return redirect('/jadwal/')
+
+    if schedule.status == 'done':
+        return redirect(f'/jadwal/view/{schedule.id}/')
     
     hari_ids = models.Data.objects.filter(schedule=schedule, entity='hari').values_list('entity_id')
-    hari = models.Day.objects.filter(user=request.user, id__in=hari_ids).order_by('sequence')
-
     jam_pembelajaran_ids = models.Data.objects.filter(schedule=schedule, entity='jam_pembelajaran').values_list('entity_id')
-    jam_pembelajaran = models.LessonHour.objects.filter(user=request.user, id__in=jam_pembelajaran_ids).order_by('sequence')
-
     kelas_ids = models.Data.objects.filter(schedule=schedule, entity='kelas').values_list('entity_id')
+    pelajaran_ids = models.Data.objects.filter(schedule=schedule, entity='pelajaran').values_list('entity_id')
+    pengajar_ids = models.Data.objects.filter(schedule=schedule, entity='pengajar').values_list('entity_id')
+    ruang_kelas_ids = models.Data.objects.filter(schedule=schedule, entity='ruang_kelas').values_list('entity_id')
+
+    hari = models.Day.objects.filter(user=request.user, id__in=hari_ids).order_by('sequence')
+    jam_pembelajaran = models.LessonHour.objects.filter(user=request.user, is_break=False, id__in=jam_pembelajaran_ids).order_by('sequence')
     kelas = models.Class.objects.filter(user=request.user, id__in=kelas_ids).order_by('sequence')
+    pelajaran = models.Lesson.objects.filter(user=request.user, time_slot__gt=0, id__in=pelajaran_ids)
+    pengajar = models.Educator.objects.filter(user=request.user, id__in=pengajar_ids)
+    ruang_kelas = models.Classroom.objects.filter(user=request.user, class_capacity__gt=0, id__in=ruang_kelas_ids)
 
+    empty_datas = []
+    if not hari.exists():
+        empty_datas.append('hari')
+    if not jam_pembelajaran.exists():
+        empty_datas.append('jam pembelajaran')
+    if not kelas.exists():
+        empty_datas.append('kelas')
+    if not pelajaran.exists():
+        empty_datas.append('pelajaran')
+    if not pengajar.exists():
+        empty_datas.append('pengajar')
+    if not ruang_kelas.exists():
+        empty_datas.append('ruang kelas')
+    
+    if empty_datas:
+        messages.error(request, f'Data {", ".join(empty_datas)} tidak bisa kosong.')
+        return redirect(f'/jadwal/detail/{schedule.id}/')
+
+    total_kelas = kelas.count()
+    available_class_capacity = sum([int(ruang.class_capacity) if ruang.is_same_time_shareable else 1 for ruang in ruang_kelas])
+    if total_kelas > available_class_capacity:
+        messages.error(request, f'{available_class_capacity} ruang kelas tidak cukup untuk {total_kelas} kelas.')
+        return redirect(f'/jadwal/detail/{schedule.id}/')
+
+    total_pengajar = pengajar.count()
+    if (total_pengajar < total_kelas):
+        minimum_classroom_needed = 0
+        class_reached = 0
+        classroom_shareable = ruang_kelas.filter(is_same_time_shareable=True).order_by('-class_capacity')
+        for classroom in classroom_shareable:
+            class_reached += classroom.class_capacity
+            minimum_classroom_needed += 1
+    
+            if class_reached >= total_kelas:
+                break
+        if class_reached < total_kelas:
+            classroom_needed = total_kelas - class_reached
+            classroom_non_shareable = ruang_kelas.filter(is_same_time_shareable=False)
+            minimum_classroom_needed += min(classroom_needed, classroom_non_shareable.count())
+
+        if (total_pengajar < minimum_classroom_needed):
+            messages.error(request, f'{total_pengajar} pengajar tidak cukup untuk mengajar {total_kelas} kelas ataupun paling sedikit {minimum_classroom_needed} ruang kelas yang dibutuhkan untuk seluruh kelas.')
+            return redirect(f'/jadwal/detail/{schedule.id}/')
+
+    list_hari = list(hari)
+    list_jam_pembelajaran = list(jam_pembelajaran)
+    list_kelas = list(kelas)
+    list_pelajaran = list(pelajaran)
+    list_pengajar = list(pengajar)
+    list_ruang_kelas = list(ruang_kelas)
+
+    # Mapped constraints data
     constraints = models.Constraint.objects.filter(schedule=schedule)
+    constraints_data = defaultdict(lambda: {
+        'capable': [],
+        'not_capable': [],
+        'capable_id1': [],
+        'capable_id2': [],
+    })
+    constraint_order = {
+        'hari': 1,
+        'jam_pembelajaran': 2,
+        'kelas': 3,
+        'ruang_kelas': 4,
+        'pengajar': 5,
+        'pelajaran': 6,
+    }
+    for constraint in constraints:
+        data1_entity = constraint.data1.entity
+        id1 = constraint.data1.entity_id
+        data1_order = constraint_order.get(data1_entity, 0)
 
-    for kelas_obj in kelas:
-        for hari_obj in hari:
-            for jam_obj in jam_pembelajaran:
-                models.ScheduleData.objects.create(
-                    class_id=kelas_obj,
-                    day_id=hari_obj,
-                    lesson_hour_id=jam_obj,
-                )
+        data2_entity = constraint.data2.entity
+        id2 = constraint.data2.entity_id
+        data2_order = constraint_order.get(data2_entity, 0)
+
+        if data1_order > data2_order:
+            data1_entity, data2_entity = data2_entity, data1_entity
+            id1, id2 = id2, id1
+
+        if constraint.is_capable:
+            constraints_data[(data1_entity, data2_entity)]['capable'].append((id1, id2))
+            constraints_data[(data1_entity, data2_entity)]['capable_id1'].append(id1)
+            constraints_data[(data1_entity, data2_entity)]['capable_id2'].append(id2)
+        else:
+            constraints_data[(data1_entity, data2_entity)]['not_capable'].append((id1, id2))
+
+    def is_constraint_capable(entity1, entity_id1, entity2, entity_id2):
+        entity1_order = constraint_order.get(entity1, 0)
+        entity2_order = constraint_order.get(entity2, 0)
+        if entity1_order > entity2_order:
+            entity1, entity2 = entity2, entity1
+            entity_id1, entity_id2 = entity_id2, entity_id1
+        
+        constraint_data = constraints_data.get((entity1, entity2), False)
+        if constraint_data:
+            entity_ids = (entity_id1, entity_id2)
+            if entity_ids in constraint_data['not_capable']:
+                return 'restrict'
+            if entity_ids in constraint_data['capable']:
+                return 'required'
+            else:
+                if (entity_id1 in constraint_data['capable_id1']) or (entity_id2 in constraint_data['capable_id2']):
+                    return 'restrict'
+        return 'optional'
+    
+    kelas_length = len(list_kelas)
+    pelajaran_length = len(list_pelajaran)
+    pengajar_length = len(list_pengajar)
+    ruang_kelas_length = len(list_ruang_kelas)
+
+    jam_pembelajaran_length = len(list_jam_pembelajaran)
+    jam_pembelajaran_ids = jam_pembelajaran.values_list('id', flat=True)
+
+    model = cp_model.CpModel()
+    possible_placements = {}
+    used_hari = []
+
+    possible_same_ruang_per_slot = defaultdict(list)
+    grup_per_slot = {}
+    possible_pelajaran_pengajar_per_ruang_slot = defaultdict(list)
+
+    pengajar_pelajaran = {}
+    pengajar_per_pelajaran = defaultdict(list)
+    pelajaran_per_pengajar = defaultdict(list)
+    multi_pelajaran = {}
+
+    pengajar_ruang = {}
+    possible_pengajar_per_ruang_slot = defaultdict(list)
+
+    for k in list_kelas:
+        is_last_kelas = kelas_length == (list_kelas.index(k) + 1)
+
+        pelajaran_per_slot = defaultdict(list)
+
+        for p in list_pelajaran:
+            is_last_pelajaran = pelajaran_length == (list_pelajaran.index(p) + 1)
+            kelas_pelajaran_capable = is_constraint_capable('kelas', k.id, 'pelajaran', p.id)
+
+            time_slot = 0 if kelas_pelajaran_capable == 'restrict' else p.time_slot
+            time_slot_per_pelajaran = []
+
+            for t in list_pengajar:
+                is_last_pengajar = pengajar_length == (list_pengajar.index(t) + 1)
+                kelas_pengajar_capable = is_constraint_capable('kelas', k.id, 'pengajar', t.id)
+                pengajar_pelajaran_capable = is_constraint_capable('pengajar', t.id, 'pelajaran', p.id)
+
+                if (t.id, p.id) in pengajar_pelajaran:
+                    pengajar_pelajaran_var = pengajar_pelajaran[(t.id, p.id)]
+                else:
+                    pengajar_pelajaran_var = model.new_bool_var(f'pengajar_pelajaran_{t.id}_{p.id}')
+                    pengajar_pelajaran[(t.id, p.id)] = pengajar_pelajaran_var
+
+                    pengajar_per_pelajaran[p.id].append(pengajar_pelajaran_var)
+                    pelajaran_per_pengajar[t.id].append(pengajar_pelajaran_var)
+                    if is_last_pelajaran:
+                        total_pengajar_pelajaran = sum(pelajaran_per_pengajar[t.id])
+                        if pengajar_length >= pelajaran_length:
+                            # Each teacher must teach one lesson
+                            model.add(total_pengajar_pelajaran == 1)
+                        else:
+                            multi_pelajaran_var = model.new_bool_var(f'multi_pelajaran_{t.id}')
+                            multi_pelajaran[t.id] = multi_pelajaran_var
+
+                            # Get the least teachers with multiple lessons
+                            model.add(total_pengajar_pelajaran >= 2).only_enforce_if(multi_pelajaran_var)
+                            model.add(total_pengajar_pelajaran == 1).only_enforce_if(multi_pelajaran_var.Not())
+
+                # Constraint to determine if teacher can teach this lesson
+                if pengajar_pelajaran_capable == 'restrict':
+                    model.add(pengajar_pelajaran_var == 0)
+                elif pengajar_pelajaran_capable == 'required':
+                    model.add(pengajar_pelajaran_var == 1)
+
+                for r in list_ruang_kelas:
+                    is_last_ruang_kelas = ruang_kelas_length == (list_ruang_kelas.index(r) + 1)
+                    kelas_ruang_capable = is_constraint_capable('kelas', k.id, 'ruang_kelas', r.id)
+                    ruang_pelajaran_capable = is_constraint_capable('ruang_kelas', r.id, 'pelajaran', p.id)
+                    ruang_pengajar_capable = is_constraint_capable('ruang_kelas', r.id, 'pengajar', t.id)
+
+                    kapasitas_kelas = r.class_capacity if r.is_same_time_shareable else 1
+
+                    for h in list_hari:
+                        hari_kelas_capable = is_constraint_capable('hari', h.id, 'kelas', k.id)
+                        hari_pelajaran_capable = is_constraint_capable('hari', h.id, 'pelajaran', p.id)
+                        hari_pengajar_capable = is_constraint_capable('hari', h.id, 'pengajar', t.id)
+                        hari_ruang_capable = is_constraint_capable('hari', h.id, 'ruang_kelas', r.id)
+
+                        used_hari_var = model.new_bool_var(f'used_hari_{k.id}_{p.id}_{t.id}_{r.id}_{h.id}')
+                        used_hari.append(used_hari_var)
+                        jam_per_hari = []
+
+                        for j in list_jam_pembelajaran:
+                            jam_kelas_capable = is_constraint_capable('jam_pembelajaran', j.id, 'kelas', k.id)
+                            jam_pelajaran_capable = is_constraint_capable('jam_pembelajaran', j.id, 'pelajaran', p.id)
+                            jam_pengajar_capable = is_constraint_capable('jam_pembelajaran', j.id, 'pengajar', t.id)
+                            jam_ruang_capable = is_constraint_capable('jam_pembelajaran', j.id, 'ruang_kelas', r.id)
+                            hari_jam_capable = is_constraint_capable('hari', h.id, 'jam_pembelajaran', j.id)
+
+                            if hari_kelas_capable == 'restrict' and jam_kelas_capable == 'restrict':
+                                hari_jam_kelas_capable = 'restrict'
+                            elif hari_kelas_capable == 'required' and jam_kelas_capable == 'required':
+                                hari_jam_kelas_capable = 'required'
+                            else:
+                                hari_jam_kelas_capable = 'optional'
+                            
+                            if hari_ruang_capable == 'restrict' and jam_ruang_capable == 'restrict':
+                                hari_jam_ruang_capable = 'restrict'
+                            elif hari_ruang_capable == 'required' and jam_ruang_capable == 'required':
+                                hari_jam_ruang_capable = 'required'
+                            else:
+                                hari_jam_ruang_capable = 'optional'
+                            
+                            if hari_pengajar_capable == 'restrict' and jam_pengajar_capable == 'restrict':
+                                hari_jam_pengajar_capable = 'restrict'
+                            elif hari_pengajar_capable == 'required' and jam_pengajar_capable == 'required':
+                                hari_jam_pengajar_capable = 'required'
+                            else:
+                                hari_jam_pengajar_capable = 'optional'
+
+                            if hari_pelajaran_capable == 'restrict' and jam_pelajaran_capable == 'restrict':
+                                hari_jam_pelajaran_capable = 'restrict'
+                            elif hari_pelajaran_capable == 'required' and jam_pelajaran_capable == 'required':
+                                hari_jam_pelajaran_capable = 'required'
+                            else:
+                                hari_jam_pelajaran_capable = 'optional'
+
+                            all_capable_combination = [
+                                kelas_pelajaran_capable,
+                                kelas_pengajar_capable,
+                                pengajar_pelajaran_capable,
+                                kelas_ruang_capable,
+                                ruang_pelajaran_capable,
+                                ruang_pengajar_capable,
+                                hari_jam_capable,
+                                hari_jam_kelas_capable,
+                                hari_jam_ruang_capable,
+                                hari_jam_pengajar_capable,
+                                hari_jam_pelajaran_capable
+                            ]
+
+                            possible_placement_var = model.new_bool_var(f'possible_placement_{k.id}_{p.id}_{t.id}_{r.id}_{h.id}_{j.id}')
+                            possible_placements[(k.id, p.id, t.id, r.id, h.id, j.id)] = possible_placement_var
+
+                            if 'restrict' in all_capable_combination:
+                                # Set to 0 if this possible placement is restrict by one of the capable combination
+                                model.add(possible_placement_var == 0)
+                            
+                            pelajaran_per_slot[(h.id, j.id)].append(possible_placement_var)
+                            time_slot_per_pelajaran.append(possible_placement_var)
+                            jam_per_hari.append(possible_placement_var)
+
+                            # Prevent multiple lesson in the same time slot for each class
+                            if is_last_pelajaran:
+                                model.add(sum(pelajaran_per_slot[(h.id, j.id)]) <= 1)
+
+                            # Set max class at the same time in the same classroom
+                            possible_same_ruang_per_slot[(r.id, h.id, j.id)].append(possible_placement_var)
+                            if is_last_kelas and is_last_pelajaran and is_last_pengajar:
+                                model.add(sum(possible_same_ruang_per_slot[(r.id, h.id, j.id)]) <= kapasitas_kelas)
+                            
+                            if (p.id, t.id, r.id, h.id, j.id) in grup_per_slot:
+                                grup_per_slot_var = grup_per_slot[(p.id, t.id, r.id, h.id, j.id)]
+                            else:
+                                grup_per_slot_var = model.new_bool_var(f'grup_per_slot_{p.id}_{t.id}_{r.id}_{h.id}_{j.id}')
+                                grup_per_slot[(p.id, t.id, r.id, h.id, j.id)] = grup_per_slot_var
+                                possible_pelajaran_pengajar_per_ruang_slot[(r.id, h.id, j.id)].append(grup_per_slot_var)
+
+                                # Each classroom can only have one teacher-lesson in the same time
+                                if is_last_pelajaran and is_last_pengajar:
+                                    model.add(sum(possible_pelajaran_pengajar_per_ruang_slot[(r.id, h.id, j.id)]) <= 1)
+                            # Determine which group is available
+                            model.add(possible_placement_var <= grup_per_slot_var)
+
+                            # Determine if teacher available to teach lesson
+                            model.add(possible_placement_var <= pengajar_pelajaran_var)
+
+                            if (t.id, r.id, h.id, j.id) in pengajar_ruang:
+                                pengajar_ruang_var = pengajar_ruang[(t.id, r.id, h.id, j.id)]
+                            else:
+                                pengajar_ruang_var = model.new_bool_var(f'pengajar_ruang_{t.id}_{r.id}_{h.id}_{j.id}')
+                                pengajar_ruang[(t.id, r.id, h.id, j.id)] = pengajar_ruang_var
+                                possible_pengajar_per_ruang_slot[(t.id, h.id, j.id)].append(pengajar_ruang_var)
+
+                                # Each teaher can only teach in one classroom in the same time
+                                if is_last_ruang_kelas:
+                                    model.add(sum(possible_pengajar_per_ruang_slot[(t.id, h.id, j.id)]) <= 1)
+                            # Determine if teacher available in that classroom
+                            model.add(possible_placement_var <= pengajar_ruang_var)
+
+                        # Get the least days used for a lesson
+                        model.add(sum(jam_per_hari) > 0).only_enforce_if(used_hari_var)
+                        model.add(sum(jam_per_hari) == 0).only_enforce_if(used_hari_var.Not())
+
+                        # Prevent non-continuous same lesson in the same day
+                        for j1 in range(jam_pembelajaran_length):
+                            for j2 in range(j1 + 1, jam_pembelajaran_length):
+                                for j3 in range(j2 + 1, jam_pembelajaran_length):
+                                    model.add(
+                                        possible_placements.get((k.id, p.id, t.id, r.id, h.id, jam_pembelajaran_ids[j1]), 0)
+                                        + possible_placements.get((k.id, p.id, t.id, r.id, h.id, jam_pembelajaran_ids[j3]), 0)
+                                        <=
+                                        possible_placements.get((k.id, p.id, t.id, r.id, h.id, jam_pembelajaran_ids[j2]), 0)
+                                        + 1
+                                    )
+
+            # Ensure each lesson to take their exact time slot for each class
+            model.add(sum(time_slot_per_pelajaran) == time_slot)
+
+            if is_last_kelas:
+                if pengajar_length <= pelajaran_length:
+                    # Each lesson must have one teacher
+                    model.add(sum(pengajar_per_pelajaran[p.id]) == 1)
+                else:
+                    # Each lesson can have more than one teacher
+                    model.add(sum(pengajar_per_pelajaran[p.id]) >= 1)
+
+    if pengajar_length > pelajaran_length:
+        # Get the least days used for each lessons and the least lessons with multiple teachers
+        model.minimize(sum(used_hari) * 1000000 + sum(list(pengajar_pelajaran.values())))
+    elif pengajar_length < pelajaran_length:
+        # Get the least days used for each lessons and the least teachers with multiple lessons
+        model.minimize(sum(used_hari) * 1000000 + sum(list(multi_pelajaran.values())))
+    else:
+        # Get the least days used for each lessons
+        model.minimize(sum(used_hari) * 1000000)
+
+    solver = cp_model.CpSolver()
+    status = solver.solve(model)
+    
+    if status not in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
+        messages.error(request, 'Mohon periksa kembali data dan batasan Anda.')
+        return redirect(f'/jadwal/detail/{schedule.id}/')
+
+    # Remove old schedule data before insert new one
+    models.ScheduleData.objects.filter(schedule=schedule).delete()
+
+    for k in list_kelas:
+        for p in list_pelajaran:
+            for t in list_pengajar:
+                for r in list_ruang_kelas:
+                    for h in list_hari:
+                        last_created_lesson_hour = 0
+                        last_data = False
+
+                        for index, j in enumerate(list_jam_pembelajaran):
+                            if (k.id, p.id, t.id, r.id, h.id, j.id) in possible_placements and solver.value(possible_placements[(k.id, p.id, t.id, r.id, h.id, j.id)]):
+                                print(k.name, h.name, j.start_time, j.finish_time, p.name, t.name, r.name)
+                                if last_data and last_data == f'{k.id}_{p.id}_{t.id}_{r.id}_{h.id}_{list_jam_pembelajaran[index - 1].id}':
+                                    try:
+                                        record = models.ScheduleData.objects.get(
+                                            schedule=schedule,
+                                            classes=k,
+                                            day=h,
+                                            lesson_hour=last_created_lesson_hour,
+                                            lesson=p,
+                                            educator=t,
+                                            classroom=r,
+                                        )
+                                        record.time_slot += 1
+                                        record.save()
+                                        last_data = f'{k.id}_{p.id}_{t.id}_{r.id}_{h.id}_{j.id}'
+                                        continue
+                                    except Exception:
+                                        pass
+                                models.ScheduleData.objects.create(
+                                    schedule=schedule,
+                                    classes=k,
+                                    day=h,
+                                    lesson_hour=j,
+                                    lesson=p,
+                                    educator=t,
+                                    classroom=r,
+                                    time_slot=1,
+                                )
+                                last_created_lesson_hour = j.id
+                                last_data = f'{k.id}_{p.id}_{t.id}_{r.id}_{h.id}_{j.id}'
 
     schedule.status = 'done'
     schedule.save()
@@ -747,9 +1109,72 @@ def jadwal_view(request, id):
     if schedule.status == 'draft':
         return redirect(f'/jadwal/detail/{schedule.id}/')
     
+    kelas_ids = models.Data.objects.filter(schedule=schedule, entity='kelas').values_list('entity_id')
+    hari_ids = models.Data.objects.filter(schedule=schedule, entity='hari').values_list('entity_id')
+
+    jam_pembelajaran_ids = models.Data.objects.filter(schedule=schedule, entity='jam_pembelajaran').values_list('entity_id')
+    all_jam_pembelajaran = models.LessonHour.objects.filter(user=request.user, id__in=jam_pembelajaran_ids).order_by('sequence')
+    list_jam_pembelajaran = list(all_jam_pembelajaran)
+    jam_pembelajaran_by_id = {
+        jam.id: index
+        for index, jam in enumerate(list_jam_pembelajaran)
+    }
+
+    def get_colors(text):
+        digest = hashlib.md5(text.encode('utf-8')).hexdigest()
+
+        # Hue: 0-359
+        hue = int(digest[:8], 16) % 360
+
+        # Keep saturation and lightness fixed for nice-looking colors
+        background = f"hsl({hue} 100% 80% / 75%)"
+        foreground = f"hsl({hue}, 100%, 30%)"
+
+        return background, foreground
+
+    def get_schedule_values(schedule_data, bg_color, text_color):
+        return {
+            'lesson': schedule_data.lesson.name,
+            'educator': schedule_data.educator.name if schedule_data.educator else None,
+            'classroom': schedule_data.classroom.name if schedule_data.classroom else None,
+            'time_slot': 0,
+            'bg_color': bg_color,
+            'text_color': text_color,
+        }
+
+    schedule_datas = models.ScheduleData.objects.filter(schedule=schedule)
+    schedule_map = {}
+    for schedule_data in schedule_datas:
+        lesson_hour_id = schedule_data.lesson_hour.id
+        time_slot = int(schedule_data.time_slot)
+        bg_color, text_color = get_colors(schedule_data.lesson.name)
+
+        schedule_map[(schedule_data.classes.id, schedule_data.day.id, lesson_hour_id)] = get_schedule_values(schedule_data, bg_color, text_color)
+
+        lesson_hour_index = jam_pembelajaran_by_id[lesson_hour_id]
+        remaining_time_slot = time_slot
+        n = 0
+        while remaining_time_slot > 0:
+            jam_pembelajaran = list_jam_pembelajaran[lesson_hour_index+n]
+            is_break = jam_pembelajaran.is_break
+            if not is_break:
+                schedule_map[(schedule_data.classes.id, schedule_data.day.id, lesson_hour_id)]['time_slot'] += 1
+                if lesson_hour_id != jam_pembelajaran.id:
+                    schedule_map[(schedule_data.classes.id, schedule_data.day.id, jam_pembelajaran.id)] = get_schedule_values(schedule_data, bg_color, text_color)
+                remaining_time_slot -= 1
+            else:
+                jam_pembelajaran = list_jam_pembelajaran[lesson_hour_index+n+1]
+                lesson_hour_id = jam_pembelajaran.id
+                schedule_map[(schedule_data.classes.id, schedule_data.day.id, lesson_hour_id)] = get_schedule_values(schedule_data, bg_color, text_color)
+            n += 1
+    
     context = {
         'schedule_id': schedule.id,
         'schedule_name': schedule.name,
         'schedule_status': schedule.status,
+        'data_kelas': models.Class.objects.filter(user=request.user, id__in=kelas_ids).order_by('sequence').values_list('id', 'name'),
+        'data_hari': models.Day.objects.filter(user=request.user, id__in=hari_ids).order_by('sequence').values_list('id', 'name'),
+        'data_jam_pembelajaran': all_jam_pembelajaran.values(),
+        'data_schedule': schedule_map,
     }
     return render(request, 'jadwal_view.html', context)

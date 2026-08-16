@@ -43,7 +43,7 @@ class Class(models.Model):
 class Classroom(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
     name = models.CharField(max_length=255)
-    class_capacity = models.IntegerField(default=0)
+    class_capacity = models.PositiveIntegerField(default=1, verbose_name='Kapasitas Kelas')
     is_same_time_shareable = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
 
@@ -61,7 +61,7 @@ class Educator(models.Model):
 class Lesson(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
     name = models.CharField(max_length=255)
-    time_slot = models.IntegerField(default=1)
+    time_slot = models.PositiveIntegerField(default=1, verbose_name='Slot Waktu')
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -104,6 +104,13 @@ class Constraint(models.Model):
 
 class ScheduleData(models.Model):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='+')
-    class_id = models.ForeignKey(Class, on_delete=models.RESTRICT, related_name='+')
-    day_id = models.ForeignKey(Day, on_delete=models.RESTRICT, related_name='+')
-    lesson_hour_id = models.ForeignKey(LessonHour, on_delete=models.RESTRICT, related_name='+')
+    classes = models.ForeignKey(Class, on_delete=models.RESTRICT, related_name='+')
+    day = models.ForeignKey(Day, on_delete=models.RESTRICT, related_name='+')
+    lesson_hour = models.ForeignKey(LessonHour, on_delete=models.RESTRICT, related_name='+')
+    lesson = models.ForeignKey(Lesson, on_delete=models.RESTRICT, related_name='+')
+    educator = models.ForeignKey(Educator, on_delete=models.RESTRICT, related_name='+', null=True, blank=True)
+    classroom = models.ForeignKey(Classroom, on_delete=models.RESTRICT, related_name='+', null=True, blank=True)
+    time_slot = models.IntegerField(default=1)
+
+    def __str__(self):
+        return f"Data Jadwal {self.schedule.name} | {self.classes.name}, {self.day.name}, {self.lesson_hour.start_time} | {self.lesson.name}, {self.educator.name if self.educator else '-'}, {self.classroom.name if self.classroom else '-'} | {self.time_slot} Slot"

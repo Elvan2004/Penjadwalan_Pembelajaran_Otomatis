@@ -26,7 +26,7 @@
     <hr class="my-3 border-blue-900"/>
     <div class="flex justify-between items-start">
         <div class="flex space-x-2">
-            <button data-modal-target="add-modal" data-modal-toggle="add-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button">Tambah</button>
+            <button data-modal-target="add-modal" data-modal-toggle="add-modal" class="text-white bg-blue-600 box-border border border-transparent hover:bg-blue-700 focus:ring-3 focus:ring-blue-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer" type="button" onclick="loadAddModal()">Tambah</button>
             <button id="update" data-modal-target="update-modal" data-modal-toggle="update-modal" class="text-body bg-gray-100 box-border border border-gray-300 hover:bg-gray-200 focus:ring-3 focus:ring-gray-100 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer hidden" type="button" onclick="loadUpdateModal()">Ubah</button>
             <button id="remove" data-modal-target="remove-modal" data-modal-toggle="remove-modal" class="text-white bg-red-600 box-border border border-transparent hover:bg-red-700 focus:ring-3 focus:ring-red-300 shadow-xs font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none cursor-pointer hidden" type="button" onclick="loadRemoveModal()">Hapus</button>
         </div>
@@ -78,7 +78,7 @@
                                 {% endif %}
                             </td>
                         {% elif val.type == 'time' %}
-                            <td>{{ data|get_item:name|time:"H:i:s" }}</td>
+                            <td>{{ data|get_item:name|time:"H:i" }}</td>
                         {% else %}
                             <td>{{ data|get_item:name }}</td>
                         {% endif %}
@@ -141,11 +141,18 @@
                 headerCheckbox: 'select-page',
             },
             order: order,
+            stateSave: true,
         });
 
         table.on('select', updateButtons);
         table.on('deselect', updateButtons);
     });
+
+    function loadAddModal() {
+        setTimeout(function() {
+            document.querySelector('#add-modal input:not([type="hidden"])')?.focus();
+        }, 100);
+    }
 
     function loadUpdateModal() {
         const selectedRow = table.rows({ selected: true });
@@ -182,6 +189,9 @@
                     input.value = record[column];
                 }
             }
+            setTimeout(function() {
+                document.querySelector('#update-modal input:not([type="hidden"])')?.focus();
+            }, 50);
         });
     }
 

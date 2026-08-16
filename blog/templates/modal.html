@@ -25,16 +25,19 @@
                                     <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
                                         <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
                                     </div>
-                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-gray-400" required/>
                                 </div>
                             {% elif val.type == 'checkbox' %}
                                 <div class="flex items-center">
-                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="w-4 h-4 border rounded-sm bg-gray-100/50 focus:ring-2 focus:ring-blue-300 checked:text-blue-600">
+                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" {% if val.default_value %} checked {% endif %} class="w-4 h-4 border rounded-sm bg-gray-100/50 focus:ring-2 focus:ring-blue-300 checked:text-blue-600">
                                     <label for="{{ name }}" class="select-none ms-2 text-sm font-medium text-heading">{{ val.label }}</label>
                                 </div>
+                            {% elif val.type == 'number' %}
+                                <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
+                                <input type="{{ val.type }}" name="{{ name }}" placeholder="{{ val.placeholder }}" {% if 'min' in val %} min="{{ val.min }}" {% endif %} id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-gray-400" required/>
                             {% else %}
                                 <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
-                                <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                                <input type="{{ val.type }}" name="{{ name }}" placeholder="{{ val.placeholder }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-gray-400" required/>
                             {% endif %}
                         </div>
                     {% endfor %}
@@ -79,16 +82,19 @@
                                     <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
                                         <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
                                     </div>
-                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                                    <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-gray-400" required/>
                                 </div>
                             {% elif val.type == 'checkbox' %}
                                 <div class="flex items-center">
                                     <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="w-4 h-4 border rounded-sm bg-gray-100/50 focus:ring-2 focus:ring-blue-300 checked:text-blue-600">
                                     <label for="{{ name }}" class="select-none ms-2 text-sm font-medium text-heading">{{ val.label }}</label>
                                 </div>
+                            {% elif val.type == 'number' %}
+                                <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
+                                <input type="{{ val.type }}" name="{{ name }}" placeholder="{{ val.placeholder }}" {% if 'min' in val %} min="{{ val.min }}" {% endif %} id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-gray-400" required/>
                             {% else %}
                                 <label for="{{ name }}" class="block mb-2.5 text-sm font-medium text-heading">{{ val.label }}</label>
-                                <input type="{{ val.type }}" name="{{ name }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required/>
+                                <input type="{{ val.type }}" name="{{ name }}" placeholder="{{ val.placeholder }}" id="{{ name }}" class="bg-gray-100/50 border border-gray-300 text-heading text-sm rounded-xl focus:ring-1 focus:border-blue-600 block w-full px-3 py-2.5 shadow-xs placeholder:text-gray-400" required/>
                             {% endif %}
                         </div>
                     {% endfor %}

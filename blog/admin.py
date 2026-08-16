@@ -13,4 +13,5 @@ admin.site.register([
     models.Schedule,
     models.Data,
     models.Constraint,
+    models.ScheduleData,
 ])
